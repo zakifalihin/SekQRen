@@ -48,8 +48,8 @@ return [
         ],
 
         'admin' => [
-            'driver' => 'sanctum',
-            'provider' => 'admins', // untuk login admin
+            'driver' => 'session',
+            'provider' => 'admins',
         ],
     ],
 
@@ -71,15 +71,17 @@ return [
     */
 
     'providers' => [
+        'admins' => [
+            'driver' => 'eloquent',
+            'model' => App\Models\Admin::class,
+        ],
+
         'users' => [
             'driver' => 'eloquent',
             'model' => App\Models\User::class,
         ],
 
-        'admins' => [
-            'driver' => 'eloquent',
-            'model' => App\Models\Admin::class,
-        ],
+        
 
         // 'users' => [
         //     'driver' => 'database',

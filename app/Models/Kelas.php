@@ -11,25 +11,32 @@ class Kelas extends Model
 
     protected $table = 'kelas';
 
-    // Kolom yang boleh diisi mass assignment
     protected $fillable = [
         'nama_kelas',
         'wali_kelas_id',
     ];
 
-    /**
-     * Relasi ke User (guru) yang menjadi wali kelas
-     */
+    // Relasi ke wali kelas (guru)
     public function waliKelas()
     {
         return $this->belongsTo(User::class, 'wali_kelas_id');
     }
 
-    /**
-     * Relasi ke siswa-siswa yang ada di kelas ini
-     */
+    // Relasi ke siswa
     public function siswa()
     {
         return $this->hasMany(Siswa::class, 'kelas_id');
+    }
+
+    // Relasi ke matapelajaran
+    public function matapelajaran()
+    {
+        return $this->hasMany(Matapelajaran::class, 'kelas_id');
+    }
+
+    // Relasi ke jadwalMapel
+    public function jadwalMapel()
+    {
+        return $this->hasMany(JadwalMapelKelas::class, 'kelas_id');
     }
 }

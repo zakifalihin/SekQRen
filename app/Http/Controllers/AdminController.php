@@ -4,15 +4,34 @@ namespace App\Http\Controllers;
 
 use App\Models\Siswa;
 use App\Models\User;
+use App\Models\Kelas;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Str;
 use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
-
 class AdminController extends Controller
 {
+
+    public function dashboard()
+        {
+            // Menghitung total guru dari tabel 'users' dengan role 'guru'
+            $totalGuru = User::where('role', 'guru')->count();
+
+            // Menghitung total siswa dari tabel 'siswa'
+            $totalSiswa = Siswa::count();
+
+            // Menghitung total kelas dari tabel 'kelas'
+            $totalKelas = Kelas::count();
+            
+            // Data absensi hari ini (diisi dengan data dummy untuk contoh)
+            $absensiHariIni = 0;
+
+            return view('admin.dashboard', compact('totalGuru', 'totalSiswa', 'totalKelas', 'absensiHariIni'));
+        }
+
+
     /* =============================
      *  GURU MANAGEMENT
      * ============================= */
@@ -135,6 +154,66 @@ class AdminController extends Controller
             'message' => 'Data guru berhasil dihapus'
         ], 200);
     }
+
+    public function showGuru(Request $request, $id = null)
+    {
+        // Mulai query untuk guru
+        $query = User::where('role', 'guru');
+
+        // Jika ada ID, batasi ke ID tersebut
+        if ($id) {
+            $query->where('id', $id);
+        }
+
+        // Jika ada search (nama atau NIP)
+        $search = $request->query('search');
+        if ($search) {
+            $query->where(function($q) use ($search) {
+                $q->where('nama', 'like', "%{$search}%")
+                ->orWhere('nip', 'like', "%{$search}%");
+            });
+        }
+
+        $guru = $query->get();
+
+        if ($guru->isEmpty()) {
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Guru tidak ditemukan'
+            ], 404);
+        }
+
+        return response()->json([
+            'status' => 'success',
+            'data' => $guru
+        ]);
+    }
+
+    public function generateQrAbsensi(Request $request)
+    {
+        $status = $request->input('status', 'datang'); // default datang
+        $expiredAt = now()->addMinutes(10);
+
+        $payload = [
+            'status' => $status,
+            'expired_at' => $expiredAt->timestamp
+        ];
+
+        $token = base64_encode(json_encode($payload));
+
+        // Generate QR dalam bentuk PNG base64
+        $qr = base64_encode(QrCode::format('png')->size(200)->generate($token));
+
+        return response()->json([
+            'status' => 'success',
+            'qr_html' => "data:image/png;base64," . $qr,
+            'token' => $token,
+            'expired_at' => $expiredAt
+        ]);
+    }
+
+
+
 
     /* =============================
      *  SISWA MANAGEMENT
@@ -272,11 +351,24 @@ class AdminController extends Controller
         ], 200);
     }
 
-    public function showSiswa($id)
+    public function showSiswa(Request $request, $id = null)
     {
-    $siswa = Siswa::with('kelas')->find($id); // ikut relasi kelas kalau ada
+        $query = Siswa::with('kelas');
 
-        if (!$siswa) {
+        $query->when($id, function($q, $id) {
+            $q->where('id', $id);
+        });
+
+        $query->when($request->query('search'), function($q, $search) {
+            $q->where(function($subQ) use ($search) {
+                $subQ->where('nama', 'like', "%{$search}%")
+                    ->orWhere('nisn', 'like', "%{$search}%");
+            });
+        });
+
+        $siswa = $query->get();
+
+        if ($siswa->isEmpty()) {
             return response()->json([
                 'status' => 'error',
                 'message' => 'Siswa tidak ditemukan'
@@ -289,4 +381,83 @@ class AdminController extends Controller
         ]);
     }
 
+
+
+
+    /* =============================
+     *  KELAS MANAGEMENT
+     * ============================= */
+    
+    // GET: semua kelas
+    public function indexKelas()
+    {
+        $kelas = Kelas::with('waliKelas', 'jadwalMapel')->get();
+        return response()->json($kelas);
+    }
+
+    // POST: tambah kelas
+    public function storeKelas(Request $request)
+    {
+        $request->validate([
+            'nama_kelas' => 'required|string',
+            'wali_kelas_id' => 'required|exists:users,id',
+        ]);
+
+        $kelas = Kelas::create([
+            'nama_kelas' => $request->nama_kelas,
+            'wali_kelas_id' => $request->wali_kelas_id,
+        ]);
+
+        return response()->json([
+            'message' => 'Kelas berhasil dibuat',
+            'kelas' => $kelas
+        ]);
+    }
+
+    // PUT: update kelas
+    public function updateKelas(Request $request, $id)
+    {
+        $kelas = Kelas::find($id); // pastikan pakai find($id)
+        if (!$kelas) {
+            return response()->json(['message' => 'Kelas tidak ditemukan'], 404);
+        }
+
+        $request->validate([
+            'nama_kelas' => 'required|string',
+            'wali_kelas_id' => 'required|exists:users,id',
+        ]);
+
+        $kelas->update([
+            'nama_kelas' => $request->nama_kelas,
+            'wali_kelas_id' => $request->wali_kelas_id,
+        ]);
+
+        return response()->json([
+            'message' => 'Kelas berhasil diupdate',
+            'kelas' => $kelas
+        ]);
+    }
+
+    // DELETE: hapus kelas
+    public function destroyKelas($id)
+    {
+        $kelas = Kelas::find($id);
+        if (!$kelas) {
+            return response()->json(['message' => 'Kelas tidak ditemukan'], 404);
+        }
+        $kelas->delete();
+        return response()->json(['message' => 'Kelas berhasil dihapus']);
+    }
+
+    // GET: tampil kelas tertentu beserta jadwal
+    public function showKelas($id)
+    {
+        $kelas = Kelas::with('waliKelas', 'jadwalMapel.mataPelajaran', 'jadwalMapel.guru')->find($id);
+
+        if (!$kelas) {
+            return response()->json(['message' => 'Kelas tidak ditemukan'], 404);
+        }
+
+        return response()->json($kelas);
+    }
 }

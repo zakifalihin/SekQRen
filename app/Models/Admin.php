@@ -2,7 +2,7 @@
 
 namespace App\Models;
 
-use Illuminate\Foundation\Auth\User as Authenticatable; // penting untuk login
+use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 use Laravel\Sanctum\HasApiTokens;
 
@@ -10,13 +10,16 @@ class Admin extends Authenticatable
 {
     use HasApiTokens, Notifiable;
 
-    protected $table = 'admins'; // pastikan pakai tabel admins
+    protected $table = 'admins';
+    protected $primaryKey = 'id'; // pastikan ID integer
+    public $incrementing = true;
+    protected $keyType = 'int';
 
     protected $fillable = [
         'nama',
         'username',
         'email',
-        'password'
+        'password',
     ];
 
     protected $hidden = [

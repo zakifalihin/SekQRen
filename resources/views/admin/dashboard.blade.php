@@ -1,175 +1,140 @@
-<!DOCTYPE html>
-<html lang="id">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>@yield('title') - Panel Admin</title>
-    <!-- Bootstrap CSS -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-    <!-- Bootstrap Icons -->
-    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
-    <!-- Google Fonts: Poppins untuk font yang lebih modern -->
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <!-- Custom CSS -->
-    <style>
-        :root {
-            --sidebar-width: 250px;
-            --primary-gradient: linear-gradient(135deg, #0f2027, #203a43, #2c5364);
-            --text-light: #e9ecef;
-            --card-shadow: 0 0.75rem 1.5rem rgba(0,0,0,.15);
-        }
-        body {
-            font-family: 'Poppins', sans-serif;
-            background-color: #e9ecef;
-            overflow-x: hidden;
-        }
-        .sidebar {
-            width: var(--sidebar-width);
-            background: var(--primary-gradient);
-            color: var(--text-light);
-            height: 100vh;
-            position: fixed;
-            top: 0;
-            left: 0;
-            padding: 1.5rem 1rem;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-            z-index: 1050;
-        }
-        .sidebar a {
-            color: var(--text-light);
-            text-decoration: none;
-            padding: 12px 15px;
-            display: flex;
-            align-items: center;
-            border-radius: 8px;
-            transition: all 0.3s ease-in-out;
-            margin-bottom: 8px;
-        }
-        .sidebar a:hover, .sidebar a.active {
-            background-color: rgba(255, 255, 255, 0.1);
-            color: white;
-            transform: translateX(5px);
-            box-shadow: 0 4px 12px rgba(0,0,0,0.2);
-        }
-        .sidebar .logo {
-            text-align: center;
-            padding-bottom: 1.5rem;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.2);
-            margin-bottom: 1.5rem;
-        }
-        .sidebar .logo h4 {
-            color: white;
-            font-weight: 600;
-        }
-        .content {
-            margin-left: var(--sidebar-width);
-            padding: 2.5rem;
-            transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-        .card-elev {
-            box-shadow: var(--card-shadow);
-            border-radius: 1rem;
-            border: none;
-        }
-        .card-title {
-            font-weight: 600;
-        }
-        .btn {
-            font-weight: 500;
-        }
-        .btn-danger {
-            background-color: #dc3545;
-            border-color: #dc3545;
-            transition: background-color 0.3s;
-        }
-        .btn-danger:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-        }
-        .btn-toggler {
-            background-color: #2c5364;
-            color: white;
-            border-radius: 50%;
-            width: 50px;
-            height: 50px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            border: none;
-            transition: all 0.3s ease-in-out;
-        }
-        .btn-toggler:hover {
-            transform: scale(1.1);
-        }
-        /* Responsiveness */
-        @media (max-width: 768px) {
-            .sidebar {
-                left: -250px;
-            }
-            .sidebar.active {
-                left: 0;
-            }
-            .content {
-                margin-left: 0;
-                padding: 1.5rem;
-            }
-        }
-    </style>
-</head>
-<body>
-    <!-- Sidebar -->
-    <div class="sidebar d-flex flex-column" id="sidebar">
-        <div class="logo">
-            <h4>Panel Admin</h4>
+@extends('layouts.app')
+
+@section('content')
+<div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-5">
+        <h1 class="fw-bold text-primary">📊 Dashboard Admin</h1>
+    </div>
+
+    <div class="row g-4 mb-5">
+        
+        <div class="col-md-6 col-lg-3">
+            <a href="{{ route('admin.guru.index') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm overflow-hidden dashboard-card">
+                    <div class="card-body d-flex align-items-center p-4">
+                        <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center p-3 me-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-person-video2 fs-4"></i>
+                        </div>
+                        <div>
+                            <p class="text-muted text-uppercase fw-bold mb-1">Total Guru</p>
+                            <h2 class="fw-bold mb-0">{{ $totalGuru }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </a>
         </div>
-        <ul class="nav flex-column mb-auto">
-            <li class="nav-item">
-                <a class="nav-link {{ Route::is('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
-                    <i class="bi bi-speedometer2 me-2"></i> Dashboard
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ Route::is('admin.guru.index') ? 'active' : '' }}" href="{{ route('admin.guru.index') }}">
-                    <i class="bi bi-person-video me-2"></i> Kelola Guru
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ Route::is('admin.siswa.index') ? 'active' : '' }}" href="{{ route('admin.siswa.index') }}">
-                    <i class="bi bi-person-fill-gear me-2"></i> Kelola Siswa
-                </a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link {{ Route::is('admin.kelas.index') ? 'active' : '' }}" href="{{ route('admin.kelas.index') }}">
-                    <i class="bi bi-house-door me-2"></i> Kelas
-                </a>
-            </li>
-        </ul>
-        <form action="{{ route('admin.logout') }}" method="POST" class="mt-3">
-            @csrf
-            <button class="btn btn-danger w-100">
-                <i class="bi bi-box-arrow-right me-2"></i> Logout
-            </button>
-        </form>
+
+        <div class="col-md-6 col-lg-3">
+            <a href="{{ route('admin.siswa.index') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm overflow-hidden dashboard-card">
+                    <div class="card-body d-flex align-items-center p-4">
+                        <div class="bg-success text-white rounded-circle d-flex align-items-center justify-content-center p-3 me-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-people-fill fs-4"></i>
+                        </div>
+                        <div>
+                            <p class="text-muted text-uppercase fw-bold mb-1">Total Siswa</p>
+                            <h2 class="fw-bold mb-0">{{ $totalSiswa }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <a href="{{ route('admin.kelas.index') }}" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm overflow-hidden dashboard-card">
+                    <div class="card-body d-flex align-items-center p-4">
+                        <div class="bg-warning text-white rounded-circle d-flex align-items-center justify-content-center p-3 me-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-easel-fill fs-4"></i>
+                        </div>
+                        <div>
+                            <p class="text-muted text-uppercase fw-bold mb-1">Total Kelas</p>
+                            <h2 class="fw-bold mb-0">{{ $totalKelas }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
+
+        <div class="col-md-6 col-lg-3">
+            <a href="#" class="text-decoration-none">
+                <div class="card h-100 border-0 shadow-sm overflow-hidden dashboard-card">
+                    <div class="card-body d-flex align-items-center p-4">
+                        <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center p-3 me-3" style="width: 60px; height: 60px;">
+                            <i class="bi bi-calendar-check-fill fs-4"></i>
+                        </div>
+                        <div>
+                            <p class="text-muted text-uppercase fw-bold mb-1">Absensi Hari Ini</p>
+                            <h2 class="fw-bold mb-0">{{ $absensiHariIni }}</h2>
+                        </div>
+                    </div>
+                </div>
+            </a>
+        </div>
     </div>
+    <div class="row g-4 mb-5">
+        <div class="col-lg-8">
+            <div class="card border-0 shadow-sm dashboard-card h-100">
+                <div class="card-body p-4 text-center">
+                    <h5 class="fw-bold mb-3">Pengaturan Absensi Guru</h5>
+                    <p class="text-muted">Pilih status absensi dan Buat QR Code.</p>
+                    <form action="{{ route('admin.absensi.qr') }}" method="GET" class="d-flex justify-content-center align-items-center flex-wrap gap-3 mt-4">
+                        <div class="form-floating" style="width: 200px;">
+                            <select class="form-select" id="status" name="status" required>
+                                <option value="datang" selected>Jam Datang</option>
+                                <option value="pulang">Jam Pulang</option>
+                            </select>
+                            <label for="status">Status</label>
+                        </div>
+                        <button type="submit" class="btn btn-lg btn-primary">
+                            <i class="bi bi-qr-code-scan me-2"></i> Buat QR Absensi
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
 
-    <!-- Main Content -->
-    <div class="content" id="main-content">
-        @yield('content')
+        <div class="col-lg-4">
+            <div class="card border-0 shadow-sm dashboard-card h-100">
+                <div class="card-body p-4">
+                    <h5 class="fw-bold mb-3">Aktivitas Terbaru</h5>
+                    <ul class="list-group list-group-flush">
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="bi bi-check-circle-fill text-success me-3 fs-5"></i>
+                            <div>
+                                <p class="fw-bold mb-0">Guru 'Ahmad' berhasil login.</p>
+                                <small class="text-muted">3 menit yang lalu</small>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="bi bi-info-circle-fill text-info me-3 fs-5"></i>
+                            <div>
+                                <p class="fw-bold mb-0">Siswa 'Budi' telah melakukan absensi.</p>
+                                <small class="text-muted">15 menit yang lalu</small>
+                            </div>
+                        </li>
+                        <li class="list-group-item d-flex align-items-center">
+                            <i class="bi bi-pencil-fill text-warning me-3 fs-5"></i>
+                            <div>
+                                <p class="fw-bold mb-0">Data kelas 7A telah diubah.</p>
+                                <small class="text-muted">1 jam yang lalu</small>
+                            </div>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </div>
     </div>
+</div>
 
-    <!-- Tombol Toggler untuk mobile -->
-    <button class="btn btn-toggler d-md-none position-fixed top-0 start-0 m-3" id="sidebar-toggler">
-        <i class="bi bi-list fs-4"></i>
-    </button>
-
-    <!-- Bootstrap JS dan dependensi -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-    <script>
-        document.getElementById('sidebar-toggler').addEventListener('click', () => {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('active');
-        });
-    </script>
-    @stack('scripts')
-</body>
-</html>
+<style>
+    .dashboard-card {
+        transition: transform 0.2s, box-shadow 0.2s;
+        border-radius: 12px;
+    }
+    .dashboard-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 1rem 3rem rgba(0, 0, 0, .175) !important;
+    }
+</style>
+@endsection

@@ -12,7 +12,9 @@ class Siswa extends Model
     protected $fillable = [
         'nama',
         'nisn',
+        'nomor_telepon',
         'jenis_kelamin',
+        'agama',
         'alamat',
         'kelas_id',
         'qr_code',
@@ -27,3 +29,4 @@ class Siswa extends Model
         return $this->belongsTo(Kelas::class, 'kelas_id');
     }
 }
+

@@ -13,8 +13,9 @@ use SimpleSoftwareIO\QrCode\Facades\QrCode;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
 use Illuminate\Support\Facades\Storage;
-use Illuminate\Support\Facades\File;
 use App\Imports\SiswaImport;
+use App\Models\MataPelajaran;
+use App\Models\JadwalMapelKelas;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SiswaExportTemplate;
 
@@ -181,11 +182,16 @@ class AdminController extends Controller
     {
         $search = $request->input('search');
         $perPage = $request->input('per_page', 10);
+        $kelasId = $request->input('kelas_id');
 
         $query = Siswa::with('kelas')
             ->when($search, function ($q) use ($search) {
                 $q->where('nama', 'like', "%{$search}%")
                 ->orWhere('nisn', 'like', "%{$search}%");
+            })
+            ->when($kelasId, function ($q) use ($kelasId) {
+                // Tambahkan kondisi filter berdasarkan kelas_id
+                $q->where('kelas_id', $kelasId);
             })
             ->orderBy('nama', 'asc');
 
@@ -193,7 +199,7 @@ class AdminController extends Controller
         $totalSiswa = Siswa::count();
         $kelas = Kelas::all();
 
-        return view('admin.siswa.index', compact('siswa', 'totalSiswa', 'kelas'));
+        return view('admin.siswa.index', compact('siswa', 'totalSiswa', 'kelas','kelasId'));
     }
 
     public function storeSiswa(Request $request)
@@ -465,5 +471,134 @@ class AdminController extends Controller
 
         $kelas->delete();
         return redirect()->route('admin.kelas.index')->with('success', 'Kelas berhasil dihapus!');
+    }
+
+
+
+
+    /* =======================================
+     * MATA PELAJARAN MANAGEMENT (WEB VERSION)
+     * ======================================= */
+    public function indexMapel()
+    {
+        // PERBAIKAN: Menggunakan nama variabel camelCase
+        $mataPelajaran = MataPelajaran::all(); 
+        return view('admin.mata_pelajaran.index', compact('mataPelajaran'));
+    }
+
+    public function storeMapel(Request $request)
+    {
+        $request->validate([
+            'nama_mapel' => 'required|string|unique:mata_pelajaran,nama_mapel',
+        ]);
+
+        MataPelajaran::create([
+            'nama_mapel' => $request->nama_mapel,
+        ]);
+
+        return redirect()->route('admin.mapel.index')->with('success', 'Mata pelajaran berhasil ditambahkan!');
+    }
+
+    public function updateMapel(Request $request, $id)
+    {
+        $mapel = MataPelajaran::find($id);
+        if (!$mapel) {
+            return redirect()->back()->with('error', 'Mata pelajaran tidak ditemukan.');
+        }
+
+        $request->validate([
+            'nama_mapel' => ['required', 'string', Rule::unique('mata_pelajaran')->ignore($mapel->id)],
+        ]);
+
+        $mapel->update([
+            'nama_mapel' => $request->nama_mapel,
+        ]);
+
+        return redirect()->route('admin.mapel.index')->with('success', 'Mata pelajaran berhasil diperbarui!');
+    }
+
+    public function destroyMapel($id)
+    {
+        $mapel = MataPelajaran::find($id);
+        if (!$mapel) {
+            return redirect()->back()->with('error', 'Mata pelajaran tidak ditemukan.');
+        }
+
+        $mapel->delete();
+
+        return redirect()->route('admin.mapel.index')->with('success', 'Mata pelajaran berhasil dihapus!');
+    }
+
+
+
+
+
+
+    /* ==================================
+     * JADWAL MANAGEMENT (WEB VERSION)
+     * ================================== */
+    public function indexJadwal(Request $request)
+    {
+        $kelasId = $request->get('kelas_id');
+        $kelas = Kelas::findOrFail($kelasId);
+
+        $jadwal = JadwalMapelKelas::with(['kelas', 'mataPelajaran', 'guru'])
+                    ->where('kelas_id', $kelasId)
+                    ->orderBy('hari')
+                    ->orderBy('jam_mulai')
+                    ->get();
+        
+        $guruOptions = User::where('role', 'guru')->get();
+        $mapelOptions = MataPelajaran::all();
+
+        return view('admin.jadwal.index', compact('jadwal', 'kelas', 'guruOptions', 'mapelOptions'));
+    }
+
+    public function storeJadwal(Request $request)
+    {
+        $request->validate([
+            'kelas_id' => 'required|exists:kelas,id',
+            'mata_pelajaran_id' => 'required|exists:mata_pelajaran,id',
+            'guru_id' => 'required|exists:users,id',
+            'hari' => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu',
+            'jam_mulai' => 'required|date_format:H:i',
+            'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
+        ]);
+
+        JadwalMapelKelas::create($request->all());
+
+        return redirect()->back()->with('success', 'Jadwal berhasil ditambahkan!');
+    }
+
+    public function updateJadwal(Request $request, $id)
+    {
+        $jadwal = JadwalMapelKelas::find($id);
+        if (!$jadwal) {
+            return redirect()->back()->with('error', 'Jadwal tidak ditemukan.');
+        }
+
+        $request->validate([
+            'mata_pelajaran_id' => 'required|exists:mata_pelajaran,id',
+            'guru_id' => 'required|exists:users,id',
+            'hari' => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu',
+            'jam_mulai' => 'required|date_format:H:i',
+            'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
+        ]);
+
+        $jadwal->update($request->all());
+
+        return redirect()->back()->with('success', 'Jadwal berhasil diperbarui!');
+    }
+
+    public function destroyJadwal($id)
+    {
+        $jadwal = JadwalMapelKelas::find($id);
+        if (!$jadwal) {
+            return redirect()->back()->with('error', 'Jadwal tidak ditemukan.');
+        }
+
+        $jadwal->delete();
+
+        return redirect()->back()->with('success', 'Jadwal berhasil dihapus!');
     }
 }

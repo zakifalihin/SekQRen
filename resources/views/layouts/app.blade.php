@@ -4,10 +4,14 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>@yield('title', 'Admin Dashboard') - Admin Panel</title>
+    <!-- Bootstrap CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- Bootstrap Icons -->
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+    <!-- Google Fonts -->
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     
+    <!-- Custom CSS -->
     <style>
         :root {
             --sidebar-width: 250px;
@@ -21,7 +25,6 @@
             font-family: 'Poppins', sans-serif;
             overflow-x: hidden;
         }
-        /* Style Sidebar yang Diperbarui */
         .sidebar {
             width: var(--sidebar-width);
             background: var(--dark-color);
@@ -121,6 +124,7 @@
 </head>
 <body>
 
+    <!-- Sidebar -->
     <div class="sidebar" id="sidebar">
         <div class="sidebar-header">
             <h4>Admin Panel</h4>
@@ -147,8 +151,8 @@
                 </a>
             </li>
             <li class="nav-item">
-                <a class="nav-link {{ Route::is('admin.absensi.qr') ? 'active' : '' }}" href="{{ route('admin.absensi.qr') }}">
-                    <i class="bi bi-qr-code-scan"></i> QrCode
+                <a class="nav-link {{ Route::is('admin.mapel.index') ? 'active' : '' }}" href="{{ route('admin.mapel.index') }}">
+                    <i class="bi bi-book-fill"></i> Mata Pelajaran
                 </a>
             </li>
         </ul>
@@ -162,8 +166,10 @@
         </div>
     </div>
     
+    <!-- Overlay for mobile -->
     <div class="overlay" id="overlay"></div>
 
+    <!-- Top Navbar for Mobile -->
     <nav class="top-navbar" id="top-navbar">
         <button class="navbar-toggler btn" type="button" id="sidebar-toggle">
             <span class="navbar-toggler-icon"></span>
@@ -171,10 +177,12 @@
         <span class="h5 mb-0 fw-bold">Admin Panel</span>
     </nav>
 
+    <!-- Main Content -->
     <div class="content" id="main-content">
         @yield('content')
     </div>
 
+    <!-- Bootstrap JS and dependencies -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         document.getElementById('sidebar-toggle').addEventListener('click', function() {

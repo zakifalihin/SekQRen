@@ -4,7 +4,12 @@
 <div class="container py-5">
     
     <div class="d-flex justify-content-between align-items-center mb-4">
-        <h1 class="fw-bold text-primary">👨‍🎓 Daftar Siswa</h1>
+        <h1 class="fw-bold text-primary">
+            👨‍🎓 Daftar Siswa
+            @if(isset($kelasId))
+                - {{ App\Models\Kelas::find($kelasId)->nama_kelas }}
+            @endif
+        </h1>
         <div class="d-flex gap-2">
             <button type="button" class="btn btn-success d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#importSiswaModal">
                 <i class="bi bi-upload me-2"></i> Impor Data

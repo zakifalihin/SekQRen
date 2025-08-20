@@ -48,4 +48,17 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::post('/kelas',        [AdminController::class, 'storeKelas'])->name('kelas.store');
     Route::put('/kelas/{id}',    [AdminController::class, 'updateKelas'])->name('kelas.update');
     Route::delete('/kelas/{id}', [AdminController::class, 'destroyKelas'])->name('kelas.destroy');
+
+    // Rute Manajemen Mata Pelajaran
+    Route::get('/mapel', [AdminController::class, 'indexMapel'])->name('mapel.index');
+    Route::post('/mapel', [AdminController::class, 'storeMapel'])->name('mapel.store');
+    Route::put('/mapel/{id}', [AdminController::class, 'updateMapel'])->name('mapel.update');
+    Route::delete('/mapel/{id}', [AdminController::class, 'destroyMapel'])->name('mapel.destroy');
+
+    // Rute Manajemen Jadwal
+    Route::get('/jadwal', [AdminController::class, 'indexJadwal'])->name('jadwal.index');
+    Route::post('/jadwal', [AdminController::class, 'storeJadwal'])->name('jadwal.store');
+    Route::put('/jadwal/{id}', [AdminController::class, 'updateJadwal'])->name('jadwal.update');
+    Route::delete('/jadwal/{id}', [AdminController::class, 'destroyJadwal'])->name('jadwal.destroy');
+
 });

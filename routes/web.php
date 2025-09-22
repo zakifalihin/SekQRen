@@ -3,7 +3,7 @@
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
-use App\Http\Controllers\GuruController;
+use App\Http\Controllers\Api\AbsensiGuruController;
 
 // Redirect root ke halaman login admin
 Route::get('/', function () {
@@ -32,8 +32,9 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::put('/guru/{id}',    [AdminController::class, 'updateGuru'])->name('admin.guru.update');
     Route::delete('/guru/{id}', [AdminController::class, 'destroyGuru'])->name('guru.destroy');
 
-    // routes/web.php
+    // Absensi QRcode admin
     Route::get('/absensi/qr', [AdminController::class, 'generateQrAbsensi'])->name('absensi.qr');
+
 
     // Rute Siswa
     Route::get('/siswa', [AdminController::class, 'indexSiswa'])->name('siswa.index');
@@ -60,5 +61,9 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::post('/jadwal', [AdminController::class, 'storeJadwal'])->name('jadwal.store');
     Route::put('/jadwal/{id}', [AdminController::class, 'updateJadwal'])->name('jadwal.update');
     Route::delete('/jadwal/{id}', [AdminController::class, 'destroyJadwal'])->name('jadwal.destroy');
+
+
+    // Daftar absensi hari ini
+    Route::get('/absensi/hari-ini', [AbsensiGuruController::class, 'hariIni'])->name('absensi.hariini');
 
 });

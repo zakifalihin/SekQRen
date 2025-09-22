@@ -20,4 +20,11 @@ class AbsensiGuru extends Model
     ];
 
     public $timestamps = true;
+
+
+    // relasi ke user (guru)
+    public function guru()
+    {
+        return $this->belongsTo(\App\Models\User::class, 'guru_id');
+    }
 }

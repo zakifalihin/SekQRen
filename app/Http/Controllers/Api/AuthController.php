@@ -4,55 +4,73 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use App\Models\User;
 use Illuminate\Support\Facades\Hash;
 
-// class AuthController extends Controller
-// {
-//     public function login(Request $request)
-//     {
-//         // Validasi input
-//         $request->validate([
-//             'nip' => 'required',
-//             'password' => 'required'
-//         ]);
-
-//         // Cari guru berdasarkan NIP
-//         $user = User::where('nip', $request->nip)->first();
-
-//         // Cek apakah guru ada dan password benar
-//         if (!$user || !Hash::check($request->password, $user->password)) {
-//             return response()->json(['message' => 'Login gagal, NIP atau Password salah'], 401);
-//         }
-
-//         // Buat token Sanctum
-//         $token = $user->createToken('auth_token')->plainTextToken;
-
-//         // Kirim respon JSON
-//         return response()->json([
-//             'message' => 'Login berhasil',
-//             'token' => $token,
-//             'user' => $user
-//         ]);
-//     }
-// }
-
-
 class AuthController extends Controller
 {
+    /**
+     * Login Guru
+     */
     public function login(Request $request)
     {
-        $credentials = $request->only('email', 'password');
+        $request->validate([
+            'nip'      => 'required|string',
+            'password' => 'required|string',
+        ]);
 
-        if (Auth::attempt($credentials)) {
+        $user = User::where('nip', $request->nip)->first();
+
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
-                'status' => 'success',
-                'user' => Auth::user(),
-                'token' => Auth::user()->createToken('API Token')->plainTextToken
-            ]);
+                'status'  => 'error',
+                'message' => 'NIP atau password salah'
+            ], 401);
         }
 
-        return response()->json(['status' => 'error', 'message' => 'Login gagal'], 401);
+        try {
+            // Hapus token lama sebelum buat baru (biar 1 device = 1 token)
+            $user->tokens()->delete();
+
+            $token = $user->createToken('API Token')->plainTextToken;
+
+            return response()->json([
+                'status' => 'success',
+                'user'   => [
+                    'id'    => $user->id,
+                    'nama'  => $user->nama,
+                    'nip'   => $user->nip,
+                    'role'  => $user->role,
+                ],
+                'token'  => $token,
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Token gagal dibuat',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * Logout Guru
+     */
+    public function logout(Request $request)
+    {
+        try {
+            $request->user()->tokens()->delete();
+
+            return response()->json([
+                'status'  => 'success',
+                'message' => 'Logout berhasil'
+            ]);
+        } catch (\Exception $e) {
+            return response()->json([
+                'status'  => 'error',
+                'message' => 'Logout gagal',
+                'error'   => $e->getMessage()
+            ], 500);
+        }
     }
 }

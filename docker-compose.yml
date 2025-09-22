@@ -1,0 +1,40 @@
+version: '3.8'
+
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: laravel_app
+    volumes:
+      - .:/var/www
+    ports:
+      - "8000:8000" # akses Laravel di http://localhost:8000
+    networks:
+      - laravel
+    depends_on:
+      - mysql
+    tty: true   # biar bisa docker exec -it laravel_app bash
+
+  mysql:
+    image: mysql:8
+    command: --default-authentication-plugin=mysql_native_password --ssl=0
+    container_name: SekQRen
+    restart: unless-stopped
+    environment:
+      MYSQL_DATABASE: absensi_sekolah
+      MYSQL_ROOT_PASSWORD: kampilbadau
+      MYSQL_USER: laravel_user
+      MYSQL_PASSWORD: secret
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - laravel
+    ports:
+      - "3307:3306" # kalau mau akses db pakai port 3307 dari luar
+
+networks:
+  laravel:
+
+volumes:
+  mysql_data:

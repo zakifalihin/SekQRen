@@ -18,6 +18,7 @@ use App\Models\MataPelajaran;
 use App\Models\JadwalMapelKelas;
 use Maatwebsite\Excel\Facades\Excel;
 use App\Exports\SiswaExportTemplate;
+use App\Models\AbsensiGuru;
 
 class AdminController extends Controller
 {
@@ -36,10 +37,15 @@ class AdminController extends Controller
             // Menghitung total kelas dari tabel 'kelas'
             $totalKelas = Kelas::count();
             
-            // Data absensi hari ini (diisi dengan data dummy untuk contoh)
-            $absensiHariIni = 0;
+            $absensiHariIni = AbsensiGuru::whereDate('tanggal', now()->toDateString())->count();
 
-            return view('admin.dashboard', compact('totalGuru', 'totalSiswa', 'totalKelas', 'absensiHariIni'));
+            // Ambil 10 aktivitas absensi terakhir (terbaru dulu), eager load guru
+            $aktivitas = AbsensiGuru::with('guru')
+                ->orderBy('created_at', 'desc')
+                ->limit(10)
+                ->get();
+
+            return view('admin.dashboard', compact('totalGuru', 'totalSiswa', 'totalKelas', 'absensiHariIni', 'aktivitas'));
         }
 
 
@@ -137,35 +143,42 @@ class AdminController extends Controller
     }
 
 
-        public function generateQrAbsensi(Request $request)
-    {
-        // Dapatkan status dari request, defaultnya 'datang'
-        $status = $request->input('status', 'datang');
-        
-        // Dapatkan durasi dari request, defaultnya 10 menit
-        $duration = (int) $request->input('duration', 5);
-        
-        // Pastikan durasi tidak nol atau negatif
-        if ($duration <= 0) {
-            $duration = 10;
-        }
 
-        // Buat objek Carbon untuk waktu kedaluwarsa
+    public function generateQrAbsensi(Request $request)
+    {
+        // 1. Validasi input
+        $request->validate([
+            'status'   => 'nullable|in:datang,pulang',
+            'duration' => 'nullable|integer|min:1|max:60', // durasi 1–60 menit
+        ]);
+
+        // 2. Ambil status (default: datang) & durasi (default: 5 menit)
+        $status   = $request->input('status', 'datang');
+        $duration = (int) $request->input('duration', 5);
+
+        // 3. Hitung expired time
         $expiredAt = Carbon::now()->addMinutes($duration);
 
-        // Buat payload untuk QR code
+        // 4. Buat payload untuk QR Code
         $payload = [
-            'status' => $status,
-            'expired_at' => $expiredAt->timestamp
+            'status'     => $status,
+            'expired_at' => $expiredAt->timestamp,
         ];
+
         $token = base64_encode(json_encode($payload));
 
-        // Generate QR code
+        // 5. Generate QR Code PNG → base64
         $qr = QrCode::format('png')->size(200)->generate($token);
         $qr_html = "data:image/png;base64," . base64_encode($qr);
 
-        // Kirim data ke view
-        return view('admin.guru.qr', compact('qr_html', 'token', 'expiredAt', 'status'));
+        // 6. Kirim ke view (pastikan file ada di: resources/views/admin/guru/qr.blade.php)
+        return view('admin.guru.qr', [
+            'qr_html'   => $qr_html,
+            'token'     => $token,
+            'expiredAt' => $expiredAt,
+            'status'    => $status,
+            'duration'  => $duration
+        ]);
     }
 
 
@@ -581,8 +594,8 @@ class AdminController extends Controller
             'mata_pelajaran_id' => 'required|exists:mata_pelajaran,id',
             'guru_id' => 'required|exists:users,id',
             'hari' => 'required|in:Senin,Selasa,Rabu,Kamis,Jumat,Sabtu',
-            'jam_mulai' => 'required|date_format:H:i',
-            'jam_selesai' => 'required|date_format:H:i|after:jam_mulai',
+            'jam_mulai' => 'sometimes|nullable|date_format:H:i',
+            'jam_selesai' => 'sometimes|nullable|date_format:H:i|after:jam_mulai',
         ]);
 
         $jadwal->update($request->all());

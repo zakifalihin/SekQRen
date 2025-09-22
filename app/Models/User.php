@@ -24,7 +24,8 @@ class User extends Authenticatable
         'nip',
         'email',
         'password',
-        'role'
+        'role',
+        'foto_url'
     ];
 
     /**
@@ -51,4 +52,30 @@ class User extends Authenticatable
     }
 
 
+    // ---------------- RELASI ----------------
+    // 1 Guru bisa punya banyak Jadwal
+    public function jadwalMapelKelas()
+    {
+        return $this->hasMany(JadwalMapelKelas::class, 'guru_id', 'id');
+    }   
+
+
+    // 1 Guru bisa punya banyak Absensi
+    public function absensis()
+    {
+        return $this->hasMany(Absensi::class, 'guru_id');
+    }
+
+    // 1 Guru bisa mengajar di banyak Kelas
+    public function kelas()
+    {
+        return $this->hasMany(Kelas::class, 'guru_id');
+    }
+
+    public function kelasYangDiajar()
+    {
+        return $this->belongsToMany(Kelas::class, 'jadwal_mapel_kelas', 'guru_id', 'kelas_id')
+                    ->with('matapelajaran') // Kita bisa sekalian mengambil data mapel
+                    ->distinct(); // Pastikan setiap kelas hanya muncul sekali
+    }
 }

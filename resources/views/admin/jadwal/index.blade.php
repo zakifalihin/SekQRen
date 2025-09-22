@@ -11,10 +11,10 @@
         </div>
         <div class="col-md-5 text-md-end mt-3 mt-md-0 d-flex gap-2 justify-content-md-end">
             <a href="{{ route('admin.kelas.index') }}" class="btn btn-outline-secondary">
-                <i class="bi bi-arrow-left me-2"></i> Kembali ke Kelas
+                <i class="bi bi-arrow-left me-1"></i> Kembali
             </a>
             <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#addJadwalModal">
-                <i class="bi bi-plus-lg me-2"></i> Tambah Jadwal
+                <i class="bi bi-plus-lg me-1"></i> Tambah Jadwal
             </button>
         </div>
     </div>
@@ -34,8 +34,8 @@
     @endif
 
     {{-- TABLE --}}
-    <div class="table-responsive shadow-sm rounded-3 border">
-        <table class="table table-hover align-middle mb-0">
+    <div class="table-responsive shadow rounded-3 border">
+        <table class="table align-middle table-hover mb-0">
             <thead class="table-light">
                 <tr class="text-center small text-uppercase text-muted">
                     <th style="width:6%">#</th>
@@ -59,7 +59,7 @@
                         <td class="text-center">
                             <div class="d-flex justify-content-center gap-2">
                                 <button type="button"
-                                    class="btn btn-warning btn-sm text-white"
+                                    class="btn btn-sm btn-warning text-white"
                                     data-bs-toggle="modal"
                                     data-bs-target="#editJadwalModal"
                                     data-id="{{ $j->id }}"
@@ -71,7 +71,7 @@
                                     <i class="bi bi-pencil-square"></i>
                                 </button>
                                 <button type="button"
-                                    class="btn btn-danger btn-sm"
+                                    class="btn btn-sm btn-danger"
                                     data-bs-toggle="modal"
                                     data-bs-target="#deleteJadwalModal"
                                     data-id="{{ $j->id }}">
@@ -92,9 +92,7 @@
     </div>
 </div>
 
-{{-- ================== MODALS ================== --}}
-
-{{-- ADD JADWAL --}}
+{{-- MODAL TAMBAH --}}
 <div class="modal fade" id="addJadwalModal" tabindex="-1" aria-labelledby="addJadwalModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content shadow-lg rounded-3">
@@ -114,7 +112,6 @@
                             </ul>
                         </div>
                     @endif
-
                     <div class="mb-3">
                         <label for="hari" class="form-label fw-semibold">Hari</label>
                         <select class="form-select" id="hari" name="hari" required>
@@ -196,7 +193,7 @@
                         <label for="editHari" class="form-label fw-semibold">Hari</label>
                         <select class="form-select" id="editHari" name="hari" required>
                             @foreach (['Senin','Selasa','Rabu','Kamis','Jumat','Sabtu'] as $h)
-                                <option value="{{ $h }}">{{ $h }}</option>
+                                <option value="{{ $h }}" {{ old('hari') == $h ? 'selected' : '' }}>{{ $h }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -205,7 +202,7 @@
                         <label for="editMataPelajaranId" class="form-label fw-semibold">Mata Pelajaran</label>
                         <select class="form-select" id="editMataPelajaranId" name="mata_pelajaran_id" required>
                             @foreach ($mapelOptions as $mapel)
-                                <option value="{{ $mapel->id }}">{{ $mapel->nama_mapel }}</option>
+                                <option value="{{ $mapel->id }}" {{ old('mata_pelajaran_id') == $mapel->id ? 'selected' : '' }}>{{ $mapel->nama_mapel }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -214,7 +211,7 @@
                         <label for="editGuruId" class="form-label fw-semibold">Guru</label>
                         <select class="form-select" id="editGuruId" name="guru_id" required>
                             @foreach ($guruOptions as $guru)
-                                <option value="{{ $guru->id }}">{{ $guru->nama }}</option>
+                                <option value="{{ $guru->id }}" {{ old('guru_id') == $guru->id ? 'selected' : '' }}>{{ $guru->nama }}</option>
                             @endforeach
                         </select>
                     </div>
@@ -222,11 +219,11 @@
                     <div class="row g-3">
                         <div class="col">
                             <label for="editJamMulai" class="form-label fw-semibold">Jam Mulai</label>
-                            <input type="time" class="form-control" id="editJamMulai" name="jam_mulai" required>
+                            <input type="time" class="form-control" id="editJamMulai" name="jam_mulai" required value="{{ old('jam_mulai') }}">
                         </div>
                         <div class="col">
                             <label for="editJamSelesai" class="form-label fw-semibold">Jam Selesai</label>
-                            <input type="time" class="form-control" id="editJamSelesai" name="jam_selesai" required>
+                            <input type="time" class="form-control" id="editJamSelesai" name="jam_selesai" required value="{{ old('jam_selesai') }}">
                         </div>
                     </div>
                 </div>
@@ -242,18 +239,18 @@
 {{-- DELETE JADWAL --}}
 <div class="modal fade" id="deleteJadwalModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 shadow">
-            <div class="modal-header bg-danger text-white">
-                <h5 class="modal-title">Konfirmasi Hapus</h5>
-                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
-            </div>
-            <div class="modal-body">
-                <p class="mb-0">Apakah kamu yakin ingin menghapus jadwal ini?</p>
-            </div>
-            <div class="modal-footer">
-                <form id="deleteJadwalForm" method="POST" action="">
-                    @csrf
-                    @method('DELETE')
+        <div class="modal-content">
+            <form id="deleteJadwalForm" method="POST" action="">
+                @csrf
+                @method('DELETE')
+                <div class="modal-header bg-danger text-white">
+                    <h5 class="modal-title">Hapus Jadwal</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">Apakah Anda yakin ingin menghapus jadwal ini?</p>
+                </div>
+                <div class="modal-footer">
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
                     <button type="submit" class="btn btn-danger">Hapus</button>
                 </form>
@@ -262,27 +259,23 @@
     </div>
 </div>
 
-@endsection
-
 @push('scripts')
 <script>
 document.addEventListener('DOMContentLoaded', function () {
-
-    // ====== EDIT MODAL (prefill) ======
     const editJadwalModal = document.getElementById('editJadwalModal');
     if (editJadwalModal) {
         editJadwalModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
-            const form   = document.getElementById('editJadwalForm');
+            const id = button.getAttribute('data-id');
+            const hari = button.getAttribute('data-hari');
+            const mapelId = button.getAttribute('data-mapel_id');
+            const guruId = button.getAttribute('data-guru_id');
+            const jamMulai = button.getAttribute('data-jam_mulai');
+            const jamSelesai = button.getAttribute('data-jam_selesai');
 
-            const id          = button.getAttribute('data-id');
-            const hari        = button.getAttribute('data-hari');
-            const mapelId     = button.getAttribute('data-mapel_id');
-            const guruId      = button.getAttribute('data-guru_id');
-            const jamMulai    = button.getAttribute('data-jam_mulai');
-            const jamSelesai  = button.getAttribute('data-jam_selesai');
-
-            form.action = `{{ route('admin.jadwal.update', ':id') }}`.replace(':id', id);
+            const form = document.getElementById('editJadwalForm');
+            form.action = `{{ route('admin.jadwal.update', ['id' => '__id__']) }}`.replace('__id__', id);
+            
             document.getElementById('editHiddenId').value = id;
             document.getElementById('editHari').value = hari;
             document.getElementById('editMataPelajaranId').value = mapelId;
@@ -292,57 +285,46 @@ document.addEventListener('DOMContentLoaded', function () {
         });
     }
 
-    // ====== DELETE MODAL (set action) ======
     const deleteJadwalModal = document.getElementById('deleteJadwalModal');
     if (deleteJadwalModal) {
         deleteJadwalModal.addEventListener('show.bs.modal', function (event) {
-            const id = event.relatedTarget.getAttribute('data-id');
+            const button = event.relatedTarget;
+            const id = button.getAttribute('data-id');
             const form = document.getElementById('deleteJadwalForm');
-            form.action = `{{ route('admin.jadwal.destroy', ':id') }}`.replace(':id', id);
+            form.action = `{{ route('admin.jadwal.destroy', ['id' => '__id__']) }}`.replace('__id__', id);
         });
     }
 
-    // ====== VALIDASI JAM (client-side kecil) ======
     function validateJam(form) {
-        const jm = form.querySelector('[name="jam_mulai"]')?.value;
-        const js = form.querySelector('[name="jam_selesai"]')?.value;
-        if (jm && js && jm >= js) {
+        const jamMulai = form.querySelector('[name="jam_mulai"]').value;
+        const jamSelesai = form.querySelector('[name="jam_selesai"]').value;
+        if (jamMulai && jamSelesai && jamMulai >= jamSelesai) {
             alert("Jam selesai harus lebih besar dari jam mulai.");
             return false;
         }
         return true;
     }
-    document.getElementById('addJadwalForm')?.addEventListener('submit', function(e){
+
+    document.getElementById('addJadwalForm')?.addEventListener('submit', function(e) {
         if (!validateJam(this)) e.preventDefault();
     });
-    document.getElementById('editJadwalForm')?.addEventListener('submit', function(e){
+    document.getElementById('editJadwalForm')?.addEventListener('submit', function(e) {
         if (!validateJam(this)) e.preventDefault();
     });
     
+    const hasErrors = "{{ $errors->any() }}";
+    const oldId = "{{ old('id') }}";
+    
     if (hasErrors) {
         if (oldId) {
-            // buka modal EDIT dan isi dari old()
-            const el = document.getElementById('editJadwalModal');
-            if (el && window.bootstrap) {
-                const form = document.getElementById('editJadwalForm');
-                form.action = `{{ route('admin.jadwal.update', ':id') }}`.replace(':id', oldId);
-                document.getElementById('editHiddenId').value = oldId;
-                if (oldVals) {
-                    if (oldVals.hari) document.getElementById('editHari').value = oldVals.hari;
-                    if (oldVals.mata_pelajaran_id) document.getElementById('editMataPelajaranId').value = oldVals.mata_pelajaran_id;
-                    if (oldVals.guru_id) document.getElementById('editGuruId').value = oldVals.guru_id;
-                    if (oldVals.jam_mulai) document.getElementById('editJamMulai').value = oldVals.jam_mulai;
-                    if (oldVals.jam_selesai) document.getElementById('editJamSelesai').value = oldVals.jam_selesai;
-                }
-                bootstrap.Modal.getOrCreateInstance(el).show();
-            }
+            const editModal = new bootstrap.Modal(document.getElementById('editJadwalModal'));
+            editModal.show();
         } else {
-            const el = document.getElementById('addJadwalModal');
-            if (el && window.bootstrap) {
-                bootstrap.Modal.getOrCreateInstance(el).show();
-            }
+            const addModal = new bootstrap.Modal(document.getElementById('addJadwalModal'));
+            addModal.show();
         }
     }
 });
 </script>
 @endpush
+@endsection

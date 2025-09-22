@@ -57,7 +57,7 @@
         </div>
 
         <div class="col-md-6 col-lg-3">
-            <a href="#" class="text-decoration-none">
+            <a href="{{ route('admin.absensi.hariini') }}" class="text-decoration-none">
                 <div class="card h-100 border-0 shadow-sm overflow-hidden dashboard-card">
                     <div class="card-body d-flex align-items-center p-4">
                         <div class="bg-info text-white rounded-circle d-flex align-items-center justify-content-center p-3 me-3" style="width: 60px; height: 60px;">
@@ -99,27 +99,39 @@
                 <div class="card-body p-4">
                     <h5 class="fw-bold mb-3">Aktivitas Terbaru</h5>
                     <ul class="list-group list-group-flush">
-                        <li class="list-group-item d-flex align-items-center">
-                            <i class="bi bi-check-circle-fill text-success me-3 fs-5"></i>
-                            <div>
-                                <p class="fw-bold mb-0">Guru 'Ahmad' berhasil login.</p>
-                                <small class="text-muted">3 menit yang lalu</small>
-                            </div>
-                        </li>
-                        <li class="list-group-item d-flex align-items-center">
-                            <i class="bi bi-info-circle-fill text-info me-3 fs-5"></i>
-                            <div>
-                                <p class="fw-bold mb-0">Siswa 'Budi' telah melakukan absensi.</p>
-                                <small class="text-muted">15 menit yang lalu</small>
-                            </div>
-                        </li>
-                        <li class="list-group-item d-flex align-items-center">
-                            <i class="bi bi-pencil-fill text-warning me-3 fs-5"></i>
-                            <div>
-                                <p class="fw-bold mb-0">Data kelas 7A telah diubah.</p>
-                                <small class="text-muted">1 jam yang lalu</small>
-                            </div>
-                        </li>
+                        @forelse($aktivitas as $item)
+                            <li class="list-group-item d-flex align-items-center">
+                                @if($item->jam_datang && !$item->jam_pulang)
+                                    <i class="bi bi-check-circle-fill text-success me-3 fs-5"></i>
+                                    <div>
+                                        <p class="fw-bold mb-0">
+                                            Guru '{{ $item->guru->nama ?? 'Unknown' }}' absen datang.
+                                        </p>
+                                        <small class="text-muted">{{ $item->created_at->diffForHumans() }}</small>
+                                    </div>
+                                @elseif($item->jam_pulang)
+                                    <i class="bi bi-box-arrow-right text-primary me-3 fs-5"></i>
+                                    <div>
+                                        <p class="fw-bold mb-0">
+                                            Guru '{{ $item->guru->nama ?? 'Unknown' }}' absen pulang.
+                                        </p>
+                                        <small class="text-muted">{{ $item->updated_at->diffForHumans() }}</small>
+                                    </div>
+                                @else
+                                    <i class="bi bi-info-circle-fill text-info me-3 fs-5"></i>
+                                    <div>
+                                        <p class="fw-bold mb-0">
+                                            Aktivitas tidak diketahui.
+                                        </p>
+                                        <small class="text-muted">{{ $item->created_at->diffForHumans() }}</small>
+                                    </div>
+                                @endif
+                            </li>
+                        @empty
+                            <li class="list-group-item text-center text-muted">
+                                Belum ada aktivitas absensi.
+                            </li>
+                        @endforelse
                     </ul>
                 </div>
             </div>

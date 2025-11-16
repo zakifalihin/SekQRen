@@ -37,7 +37,7 @@
         <table class="table table-hover align-middle mb-0">
             <thead class="table-primary text-center">
                 <tr>
-                    <th style="width:5%">#</th>
+                    <th style="width:5%">No</th>
                     <th style="width:35%">Nama Mata Pelajaran</th>
                     <th style="width:15%">Total Jadwal</th>
                     <th style="width:20%">Detail Jadwal</th>

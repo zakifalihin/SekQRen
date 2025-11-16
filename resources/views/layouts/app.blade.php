@@ -3,6 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>@yield('title', 'Admin Dashboard') - Admin Panel</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
@@ -20,7 +21,7 @@
             --text-1: #0f172a;
             --text-2: #64748b;
             --border: #e2e8f0;
-            --shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px 0 rgba(0,0,0,0.06);
+            --shadow: 0 1px 3px 0 rgba(163, 92, 92, 0.1), 0 1px 2px 0 rgba(0,0,0,0.06);
             --shadow-lg: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05);
         }
 
@@ -315,59 +316,105 @@
             <div class="subtitle">Management System</div>
         </div>
         
-        <nav class="sidebar-nav">
-            <ul class="nav flex-column">
-                <li class="nav-item">
-                    <a class="nav-link {{ Route::is('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
-                        <i class="bi bi-grid-1x2-fill"></i>
-                        <span>Dashboard</span>
-                    </a>
-                </li>
+    <nav class="sidebar-nav">
+    <ul class="nav flex-column">
+        
+        <!-- DASHBOARD -->
+        <li class="nav-item">
+            <a class="nav-link {{ Route::is('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
+                <i class="bi bi-grid-1x2-fill"></i>
+                <span>Dashboard</span>
+            </a>
+        </li>
 
-                <li class="nav-item">
-                    <a class="nav-link dropdown-toggle-custom {{ Route::is(['admin.guru.*', 'admin.siswa.*', 'admin.kelas.*', 'admin.mapel.*']) ? 'active' : '' }}" 
-                       data-bs-toggle="collapse" 
-                       href="#dataDropdown" 
-                       role="button" 
-                       aria-expanded="{{ Route::is(['admin.guru.*', 'admin.siswa.*', 'admin.kelas.*', 'admin.mapel.*']) ? 'true' : 'false' }}">
-                        <div class="d-flex align-items-center">
-                            <i class="bi bi-database-fill"></i>
-                            <span>Kelola Data</span>
-                        </div>
-                        <i class="bi bi-chevron-down chevron"></i>
-                    </a>
-                    <div class="collapse {{ Route::is(['admin.guru.*', 'admin.siswa.*', 'admin.kelas.*', 'admin.mapel.*']) ? 'show' : '' }}" id="dataDropdown">
-                        <ul class="nav flex-column">
-                            <li class="nav-item">
-                                <a class="nav-link {{ Route::is('admin.guru.*') ? 'active' : '' }}" href="{{ route('admin.guru.index') }}">
-                                    <i class="bi bi-person-badge-fill"></i>
-                                    <span>Guru</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ Route::is('admin.siswa.*') ? 'active' : '' }}" href="{{ route('admin.siswa.index') }}">
-                                    <i class="bi bi-people-fill"></i>
-                                    <span>Siswa</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ Route::is('admin.kelas.*') ? 'active' : '' }}" href="{{ route('admin.kelas.index') }}">
-                                    <i class="bi bi-building"></i>
-                                    <span>Kelas</span>
-                                </a>
-                            </li>
-                            <li class="nav-item">
-                                <a class="nav-link {{ Route::is('admin.mapel.*') ? 'active' : '' }}" href="{{ route('admin.mapel.index') }}">
-                                    <i class="bi bi-book-fill"></i>
-                                    <span>Mata Pelajaran</span>
-                                </a>
-                            </li>
-                        </ul>
-                    </div>
-                </li>
-            </ul>
-        </nav>
+        <!-- MODUL 1: KELOLA DATA MASTER -->
+        <li class="nav-item">
+            <a class="nav-link dropdown-toggle-custom {{ Route::is(['admin.guru.*', 'admin.siswa.*', 'admin.kelas.*', 'admin.mapel.*']) ? 'active' : '' }}" 
+               data-bs-toggle="collapse" 
+               href="#dataDropdown" 
+               role="button" 
+               aria-expanded="{{ Route::is(['admin.guru.*', 'admin.siswa.*', 'admin.kelas.*', 'admin.mapel.*']) ? 'true' : 'false' }}">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-database-fill"></i>
+                    <span>Data Master</span>
+                </div>
+                <i class="bi bi-chevron-down chevron"></i>
+            </a>
+            <div class="collapse {{ Route::is(['admin.guru.*', 'admin.siswa.*', 'admin.kelas.*', 'admin.mapel.*']) ? 'show' : '' }}" id="dataDropdown">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {{ Route::is('admin.guru.*') ? 'active' : '' }}" href="{{ route('admin.guru.index') }}">
+                            <i class="bi bi-person-badge-fill"></i>
+                            <span>Guru</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ Route::is('admin.siswa.*') ? 'active' : '' }}" href="{{ route('admin.siswa.index') }}">
+                            <i class="bi bi-people-fill"></i>
+                            <span>Siswa</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ Route::is('admin.kelas.*') ? 'active' : '' }}" href="{{ route('admin.kelas.index') }}">
+                            <i class="bi bi-building"></i>
+                            <span>Kelas</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ Route::is('admin.mapel.*') ? 'active' : '' }}" href="{{ route('admin.mapel.index') }}">
+                            <i class="bi bi-book-fill"></i>
+                            <span>Mata Pelajaran</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
 
+        <!-- MODUL 2: OPERASIONAL & ABSENSI -->
+        <!-- Menggunakan route grouping 'admin.jadwal.*', 'admin.absensi.*' -->
+        <li class="nav-item">
+            <a class="nav-link dropdown-toggle-custom {{ Route::is(['admin.jadwal.*', 'admin.absensi.*']) ? 'active' : '' }}" 
+               data-bs-toggle="collapse" 
+               href="#operasionalDropdown" 
+               role="button" 
+               aria-expanded="{{ Route::is(['admin.jadwal.*', 'admin.absensi.*']) ? 'true' : 'false' }}">
+                <div class="d-flex align-items-center">
+                    <i class="bi bi-clock-history"></i>
+                    <span>Operasional Absensi</span>
+                </div>
+                <i class="bi bi-chevron-down chevron"></i>
+            </a>
+            <div class="collapse {{ Route::is(['admin.jadwal.*', 'admin.absensi.*']) ? 'show' : '' }}" id="operasionalDropdown">
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <!-- Menggunakan Route: admin.absensi.hariini -->
+                        <a class="nav-link {{ Route::is('admin.absensi.guru') ? 'active' : '' }}" href="{{ route('admin.absensi.guru') }}">
+                            <i class="bi bi-person-check"></i>
+                            <span>Absensi Guru</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <!-- Menggunakan Route: admin.absensi.siswa -->
+                        <a class="nav-link {{ Route::is('admin.absensi.siswa') ? 'active' : '' }}" href="{{ route('admin.absensi.siswa') }}">
+                            <i class="bi bi-person-lines-fill"></i>
+                            <span>Absensi Siswa</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </li>
+
+        <!-- MODUL 3: PELAPORAN & EXPORT -->
+        <li class="nav-item">
+            <!-- Menggunakan Route: admin.laporan.index -->
+            <a class="nav-link {{ Route::is('admin.laporan.index') ? 'active' : '' }}" href="{{ route('admin.laporan.index') }}">
+                <i class="bi bi-file-earmark-bar-graph-fill"></i>
+                <span>Laporan & Export</span>
+            </a>
+        </li>
+        
+    </ul>
+</nav>
         <div class="sidebar-footer">
             <button class="theme-toggle" id="theme-toggle">
                 <i class="bi bi-moon-stars-fill me-2"></i>

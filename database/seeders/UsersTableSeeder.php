@@ -10,54 +10,31 @@ class UsersTableSeeder extends Seeder
 {
     public function run()
     {
-        $gurus = [
-            [
-                'nama' => 'Ahmad Fauzi',
-                'nip' => '198501012010011001',
-                'password' => Hash::make('password123'),
-                'email' => 'ahmad.fauzi@example.com',
-                'role' => 'guru',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
-            [
-                'nama' => 'Siti Aminah',
-                'nip' => '197912142010012002',
-                'password' => Hash::make('password123'),
-                'email' => 'siti.aminah@example.com',
-                'role' => 'guru',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ],
+        DB::table('users')->insert([
             [
                 'nama' => 'Budi Santoso',
-                'nip' => '198208152010013003',
-                'password' => Hash::make('password123'),
-                'email' => 'budi.santoso@example.com',
+                'nip' => '198877665',
+                'password' => Hash::make('password'),
+                'email' => 'budi@guru.com',
                 'role' => 'guru',
                 'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
-                'nama' => 'Dewi Lestari',
-                'nip' => '198707102010014004',
-                'password' => Hash::make('password123'),
-                'email' => 'dewi.lestari@example.com',
+                'nama' => 'Ani Lestari',
+                'nip' => '199112223',
+                'password' => Hash::make('password'),
+                'email' => 'ani@guru.com',
                 'role' => 'guru',
                 'created_at' => now(),
-                'updated_at' => now(),
             ],
             [
-                'nama' => 'Rudi Hartono',
-                'nip' => '197605202010015005',
-                'password' => Hash::make('password123'),
-                'email' => 'rudi.hartono@example.com',
-                'role' => 'guru',
+                'nama' => 'Kepala Sekolah',
+                'nip' => '100000001',
+                'password' => Hash::make('password'),
+                'email' => 'kepsek@school.com',
+                'role' => 'kepala_sekolah',
                 'created_at' => now(),
-                'updated_at' => now(),
             ],
-        ];
-
-        DB::table('users')->insert($gurus);
+        ]);
     }
 }

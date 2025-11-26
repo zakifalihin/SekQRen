@@ -11,8 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('absensi_siswas', function (Blueprint $table) {
+        Schema::create('users', function (Blueprint $table) {
             $table->id();
+            $table->string('nama');
+            $table->string('nip')->unique(); // NIP unik
+            $table->string('password');
+            $table->string('email')->unique(); // Email unik
+            $table->enum('role', ['guru', 'kepala_sekolah']); // Role menggunakan ENUM
             $table->timestamps();
         });
     }
@@ -22,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('absensi_siswas');
+        Schema::dropIfExists('users');
     }
 };

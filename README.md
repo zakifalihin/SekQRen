@@ -74,6 +74,7 @@ composer install
 ```bash
 cp .env.example .env
 php artisan key:generate
+php artisan storage:link
 ```
 
 Atur database di `.env`:

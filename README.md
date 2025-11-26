@@ -1,6 +1,6 @@
 # School Attendance System (Laravel + Flutter)
 
-Sistem absensi sekolah modern berbasis **Laravel** sebagai backend & web admin, serta **Flutter** sebagai aplikasi mobile untuk guru. Sistem ini mendukung absensi real-time, validasi GPS, laporan lengkap, dan manajemen data sekolah (guru, siswa, kelas, jadwal, dan mata pelajaran).
+Sistem absensi sekolah modern berbasis **Laravel** sebagai backend & web admin, serta **Flutter** sebagai aplikasi mobile untuk guru. Sistem ini mendukung absensi real-time, laporan lengkap, dan manajemen data sekolah (guru, siswa, kelas, jadwal, dan mata pelajaran).
 
 ---
 
@@ -22,7 +22,6 @@ Sistem absensi sekolah modern berbasis **Laravel** sebagai backend & web admin, 
 ### Mobile App (Flutter)
 - Login Guru menggunakan token Sanctum
 - Check-in dan Check-out absensi
-- Validasi lokasi menggunakan GPS
 - Melihat riwayat absensi
 - Notifikasi (via push)
 - Penyimpanan session di local storage
@@ -32,7 +31,7 @@ Sistem absensi sekolah modern berbasis **Laravel** sebagai backend & web admin, 
 ## 2. Teknologi yang Digunakan
 
 ### Backend (Laravel)
-- Laravel 10
+- Laravel 12
 - PHP 8.2+
 - MySQL / MariaDB
 - Laravel Sanctum
@@ -62,7 +61,7 @@ root/
 
 ### 4.1 Clone Repository
 ```bash
-git clone https://github.com/SekQRen/absensi-sekolah.git
+git clone https://github.com/zakifalihin/SekQRen.git
 cd backend-laravel
 ```
 
@@ -82,10 +81,10 @@ Atur database di `.env`:
 ```
 DB_CONNECTION=mysql
 DB_HOST=127.0.0.1
-DB_PORT=3306
+DB_PORT=3308
 DB_DATABASE=absensi_sekolah
 DB_USERNAME=root
-DB_PASSWORD=your_password
+DB_PASSWORD=
 ```
 
 ### 4.4 Migrasi Database

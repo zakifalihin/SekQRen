@@ -176,7 +176,6 @@ Query:
 ```
 ?page=1&limit=10&month=2024-01
 ```
-
 ---
 
 ## 7. Roadmap
@@ -185,10 +184,7 @@ Query:
 - [x] Autentikasi Guru (Sanctum)
 - [x] Absensi Check-in/out
 - [x] Laporan Absensi
-- [ ] Push Notification (FCM)
-- [ ] Validasi GPS Radius
-- [ ] Absensi Menggunakan Face Recognition
-- [ ] Dashboard Orang Tua
+- [x] Export Excel
 
 ---
 

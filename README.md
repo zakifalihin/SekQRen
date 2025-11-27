@@ -51,7 +51,7 @@ Sistem absensi sekolah modern berbasis **Laravel** sebagai backend & web admin, 
 
 ```
 root/
- ├── backend-laravel/      → Backend + Web Admin
+ ├── backend-laravel/      → Backend API + Web Admin
  └── mobile-flutter/       → Aplikasi Mobile Flutter
 ```
 
@@ -62,7 +62,6 @@ root/
 ### 4.1 Clone Repository
 ```bash
 git clone https://github.com/zakifalihin/SekQRen.git
-cd backend-laravel
 ```
 
 ### 4.2 Install Dependencies

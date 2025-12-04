@@ -3,6 +3,8 @@
 @section('content')
 <div class="container py-5">
     
+    {{-- ... BAGIAN HEADER, PENCARIAN, DAN TABEL TETAP SAMA ... --}}
+
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="fw-bold text-primary">Daftar Guru</h1>
         <button type="button" class="btn btn-primary d-flex align-items-center" data-bs-toggle="modal" data-bs-target="#addGuruModal">
@@ -12,36 +14,38 @@
     
     <div class="card mb-4 shadow-sm border-0">
         <div class="card-body">
-            <!-- Perbaikan: Form action disesuaikan dengan rute yang ada -->
             <form action="{{ route('admin.guru.index') }}" method="GET" class="d-flex">
                 <input type="text" name="search" class="form-control me-2" placeholder="Cari guru berdasarkan NIP atau nama..." value="{{ request('search') }}">
+                
+                <input type="hidden" name="per_page" value="{{ request('per_page', 5) }}">
+                
                 <button type="submit" class="btn btn-outline-secondary">Cari</button>
             </form>
         </div>
     </div>
     
     <div class="card shadow-sm border-0">
-        <div class="card-body">
+        <div class="card-body p-0">
             <div class="table-responsive">
-                <table class="table table-hover align-middle">
+                <table class="table table-hover align-middle mb-0">
                     <thead class="table-primary">
                         <tr>
-                            <th scope="col" style="width: 5%">No</th>
+                            <th scope="col" class="text-center" style="width: 5%">No</th>
                             <th scope="col">NIP</th>
                             <th scope="col">Nama</th>
                             <th scope="col">Email</th>
-                            <th scope="col" style="width: 20%">Aksi</th>
+                            <th scope="col" class="text-center" style="width: 20%">Aksi</th>
                         </tr>
                     </thead>
                     <tbody>
                         @forelse ($guru as $g)
                             <tr>
-                                <td>{{ ($guru->currentPage() - 1) * $guru->perPage() + $loop->iteration }}</td>
+                                <td class="text-center">{{ ($guru->currentPage() - 1) * $guru->perPage() + $loop->iteration }}</td>
                                 <td>{{ $g->nip }}</td>
                                 <td>{{ $g->nama }}</td>
                                 <td>{{ $g->email }}</td>
                                 <td>
-                                    <div class="d-flex gap-2">
+                                    <div class="d-flex justify-content-center gap-2">
                                         <button type="button" class="btn btn-info btn-sm text-white" data-bs-toggle="modal" data-bs-target="#detailGuruModal"
                                                 data-nama="{{ $g->nama }}" data-email="{{ $g->email }}" data-nip="{{ $g->nip }}">
                                             <i class="bi bi-eye"></i>
@@ -71,18 +75,46 @@
                 </table>
             </div>
             
-            <!-- Tambahkan Paginate -->
-            <div class="d-flex justify-content-center">
-                {{ $guru->links() }}
+            {{-- PERBAIKAN UTAMA: Selalu Tampilkan Pagination Footer --}}
+            <div class="card-footer bg-white border-0">
+                <div class="d-flex justify-content-center">
+                    
+                    {{-- Kita tidak bisa menggunakan $guru->links() karena dia hanya muncul jika hasPages() true. --}}
+                    {{-- Solusi: Kita buat manual tombol Prev dan Next berdasarkan properti paginator. --}}
+                    
+                    <nav class="d-flex" role="navigation" aria-label="Pagination">
+                        {{-- Tombol Prev --}}
+                        <a 
+                            @if ($guru->onFirstPage())
+                                class="btn btn-outline-secondary me-2 disabled" aria-disabled="true"
+                            @else
+                                class="btn btn-outline-secondary me-2" href="{{ $guru->previousPageUrl() }}"
+                            @endif
+                        >
+                            Prev
+                        </a>
+                        
+                        {{-- Tombol Next --}}
+                        <a 
+                            @if ($guru->hasMorePages())
+                                class="btn btn-outline-secondary" href="{{ $guru->nextPageUrl() }}"
+                            @else
+                                class="btn btn-outline-secondary disabled" aria-disabled="true"
+                            @endif
+                        >
+                            Next
+                        </a>
+                    </nav>
+
+                </div>
             </div>
+            
         </div>
     </div>
 
 </div>
 
-<!-- ============================================== -->
-<!--             MODAL FORM TAMBAH GURU             -->
-<!-- ============================================== -->
+{{-- SISA KODE MODAL DAN SCRIPT JAVASCRIPT ANDA DI SINI (TIDAK BERUBAH) --}}
 <div class="modal fade" id="addGuruModal" tabindex="-1" aria-labelledby="addGuruModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -90,7 +122,6 @@
                 <h5 class="modal-title" id="addGuruModalLabel">Tambah Guru Baru</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            <!-- Perbaikan: Form action disesuaikan dengan rute yang ada -->
             <form action="{{ route('admin.guru.store') }}" method="POST">
                 @csrf
                 <div class="modal-body">
@@ -120,9 +151,6 @@
     </div>
 </div>
 
-<!-- ============================================== -->
-<!--             MODAL FORM EDIT GURU               -->
-<!-- ============================================== -->
 <div class="modal fade" id="editGuruModal" tabindex="-1" aria-labelledby="editGuruModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -160,9 +188,6 @@
     </div>
 </div>
 
-<!-- ============================================== -->
-<!--             MODAL DETAIL GURU                  -->
-<!-- ============================================== -->
 <div class="modal fade" id="detailGuruModal" tabindex="-1" aria-labelledby="detailGuruModalLabel" aria-hidden="true">
     <div class="modal-dialog">
         <div class="modal-content">
@@ -200,7 +225,7 @@
             const guruEmail = button.getAttribute('data-email');
             
             const form = document.getElementById('editGuruForm');
-            form.action = `guru/${guruId}`; // Sesuaikan dengan route yang Anda inginkan
+            form.action = `{{ url('admin/guru') }}/${guruId}`; 
             
             const modalTitle = editGuruModal.querySelector('.modal-title');
             const inputNip = editGuruModal.querySelector('#editNip');
@@ -211,6 +236,7 @@
             inputNip.value = guruNip;
             inputNama.value = guruNama;
             inputEmail.value = guruEmail;
+            editGuruModal.querySelector('#editPassword').value = ''; 
         });
 
         // Logika untuk mengisi data pada Modal Detail Guru

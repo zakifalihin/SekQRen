@@ -53,24 +53,36 @@ class AdminController extends Controller
     *  GURU MANAGEMENT (WEB VERSION)
     * ============================= */
 
-
     public function indexGuru(Request $request)
     {
         $search = $request->input('search');
-        $perPage = $request->input('per_page', 10); // default 10 per halaman
+        $perPage = $request->input('per_page', 10); // Tetap mempertahankan per_page
 
         $query = User::where('role', 'guru')
             ->when($search, function ($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                ->orWhere('nip', 'like', "%{$search}%");
+                $q->where(function ($sub) use ($search) {
+                    $sub->where('nama', 'like', "%{$search}%")
+                        ->orWhere('nip', 'like', "%{$search}%");
+                });
             })
             ->orderBy('nama', 'asc');
 
-        $guru = $query->paginate($perPage);
+        // !!! PERUBAHAN UTAMA: Menggunakan simplePaginate untuk Prev/Next saja
+        $guru = $query->simplePaginate($perPage); 
+        
+        // appends tetap penting
+        $guru->appends($request->only('search', 'per_page'));
+
         $totalGuru = User::where('role', 'guru')->count();
+
+        // Jika request AJAX (untuk live search + pagination)
+        if ($request->ajax()) {
+            return view('admin.guru.index', compact('guru', 'totalGuru', 'search'))->render();
+        }
 
         return view('admin.guru.index', compact('guru', 'totalGuru', 'search'));
     }
+
 
     public function storeGuru(Request $request)
     {
@@ -184,36 +196,41 @@ class AdminController extends Controller
 
 
 
-
-
-
     /* ==================================
      * SISWA MANAGEMENT (WEB VERSION)
      * ================================== */
 
     public function indexSiswa(Request $request)
-    {
-        $search = $request->input('search');
-        $perPage = $request->input('per_page', 10);
-        $kelasId = $request->input('kelas_id');
+{
+    $search = $request->input('search');
+    $perPage = $request->input('per_page', 50);
+    $kelasId = $request->input('kelas_id');
 
-        $query = Siswa::with('kelas')
-            ->when($search, function ($q) use ($search) {
-                $q->where('nama', 'like', "%{$search}%")
-                ->orWhere('nisn', 'like', "%{$search}%");
-            })
-            ->when($kelasId, function ($q) use ($kelasId) {
-                // Tambahkan kondisi filter berdasarkan kelas_id
-                $q->where('kelas_id', $kelasId);
-            })
-            ->orderBy('nama', 'asc');
+    $query = Siswa::with('kelas')
+        ->when($search, function ($q) use ($search) {
+            $q->where(function ($subQuery) use ($search) {
+                $subQuery->where('nama', 'like', "%{$search}%") 
+            ->orWhere('nisn', 'like', "%{$search}%");
+            });
+        })
+        ->when($kelasId, function ($q) use ($kelasId) {
+            $q->where('kelas_id', $kelasId);
+        })
+        ->orderBy('nama', 'asc');
 
-        $siswa = $query->paginate($perPage);
-        $totalSiswa = Siswa::count();
-        $kelas = Kelas::all();
+    $siswa = $query->paginate($perPage);
+    $siswa->appends($request->only('search', 'kelas_id', 'per_page'));
 
-        return view('admin.siswa.index', compact('siswa', 'totalSiswa', 'kelas','kelasId'));
+    if ($request->ajax()) {
+        return view('admin.siswa.partials.siswa_table', compact('siswa'))->render();
     }
+
+    $totalSiswa = Siswa::count();
+    $kelas = Kelas::all();
+
+    return view('admin.siswa.index', compact('siswa', 'totalSiswa', 'kelas', 'kelasId'));
+}
+
 
     public function storeSiswa(Request $request)
     {
@@ -341,91 +358,6 @@ class AdminController extends Controller
 
 
 
-
-
-
-
-
-
-
-
-//     /* =============================
-//      *  KELAS MANAGEMENT
-//      * ============================= */
-    
-//     // GET: semua kelas
-//     public function indexKelas()
-//     {
-//         $kelas = Kelas::with('waliKelas', 'jadwalMapel')->get();
-//         return response()->json($kelas);
-//     }
-
-//     // POST: tambah kelas
-//     public function storeKelas(Request $request)
-//     {
-//         $request->validate([
-//             'nama_kelas' => 'required|string',
-//             'wali_kelas_id' => 'required|exists:users,id',
-//         ]);
-
-//         $kelas = Kelas::create([
-//             'nama_kelas' => $request->nama_kelas,
-//             'wali_kelas_id' => $request->wali_kelas_id,
-//         ]);
-
-//         return response()->json([
-//             'message' => 'Kelas berhasil dibuat',
-//             'kelas' => $kelas
-//         ]);
-//     }
-
-//     // PUT: update kelas
-//     public function updateKelas(Request $request, $id)
-//     {
-//         $kelas = Kelas::find($id); // pastikan pakai find($id)
-//         if (!$kelas) {
-//             return response()->json(['message' => 'Kelas tidak ditemukan'], 404);
-//         }
-
-//         $request->validate([
-//             'nama_kelas' => 'required|string',
-//             'wali_kelas_id' => 'required|exists:users,id',
-//         ]);
-
-//         $kelas->update([
-//             'nama_kelas' => $request->nama_kelas,
-//             'wali_kelas_id' => $request->wali_kelas_id,
-//         ]);
-
-//         return response()->json([
-//             'message' => 'Kelas berhasil diupdate',
-//             'kelas' => $kelas
-//         ]);
-//     }
-
-//     // DELETE: hapus kelas
-//     public function destroyKelas($id)
-//     {
-//         $kelas = Kelas::find($id);
-//         if (!$kelas) {
-//             return response()->json(['message' => 'Kelas tidak ditemukan'], 404);
-//         }
-//         $kelas->delete();
-//         return response()->json(['message' => 'Kelas berhasil dihapus']);
-//     }
-
-//     // GET: tampil kelas tertentu beserta jadwal
-//     public function showKelas($id)
-//     {
-//         $kelas = Kelas::with('waliKelas', 'jadwalMapel.mataPelajaran', 'jadwalMapel.guru')->find($id);
-
-//         if (!$kelas) {
-//             return response()->json(['message' => 'Kelas tidak ditemukan'], 404);
-//         }
-
-//         return response()->json($kelas);
-//     }
-// }
 
 
 /* =============================

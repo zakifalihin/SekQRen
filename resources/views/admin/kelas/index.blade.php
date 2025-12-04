@@ -232,11 +232,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const addKelasModal = document.getElementById('addKelasModal');
     if (addKelasModal) {
         addKelasModal.addEventListener('show.bs.modal', function (event) {
-            // Logika untuk menampilkan pesan error di modal tambah
-            @if ($errors->any() && old('_token') && !old('id'))
-                const errors = new bootstrap.Modal(document.getElementById('addKelasModal'));
-                errors.show();
-            @endif
         });
     }
 });

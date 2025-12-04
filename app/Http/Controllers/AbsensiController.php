@@ -38,9 +38,6 @@ class AbsensiController extends Controller
         $endDate = Carbon::parse($request->end_date)->endOfDay();
         
         $query = \App\Models\AbsensiGuru::with('guru')
-            // Menggunakan whereBetween pada format DATETIME (tetapi ini juga berlaku untuk DATE)
-            // Jika kolom 'tanggal' di DB Anda HANYA DATE, ini seharusnya tetap bekerja, 
-            // namun menggunakan Carbon::endOfDay() adalah praktik yang lebih aman
             ->whereBetween('tanggal', [$startDate, $endDate]);
 
         if ($request->guru_id) {
@@ -126,8 +123,6 @@ class AbsensiController extends Controller
         return response($csv_output, 200, $headers);
     }
 
-
-    // ... (Fungsi siswaIndex tidak berubah)
     public function siswaIndex()
     {
         return view('admin.operasional.siswa', [

@@ -91,7 +91,9 @@ DB_PASSWORD=
 ```bash
 php artisan migrate
 ```
-
+```bash
+php artisan db:seed
+```
 Atau import file SQL:
 
 ```bash

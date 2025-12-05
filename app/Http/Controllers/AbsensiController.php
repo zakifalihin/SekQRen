@@ -10,8 +10,6 @@ use Carbon\Carbon;
 
 class AbsensiController extends Controller
 {
-    // ... (Fungsi guruIndex tidak berubah)
-
     public function guruIndex()
     {
         $dataGuru = User::where('role', 'guru')

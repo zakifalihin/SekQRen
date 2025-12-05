@@ -2,8 +2,6 @@
 
 @section('content')
 <div class="container py-5">
-    
-    {{-- ... BAGIAN HEADER, PENCARIAN, DAN TABEL TETAP SAMA ... --}}
 
     <div class="d-flex justify-content-between align-items-center mb-4">
         <h1 class="fw-bold text-primary">Daftar Guru</h1>
@@ -259,5 +257,13 @@
         });
     });
 </script>
+
+<style>
+    .btn-outline-secondary:hover:not(.disabled) {
+        background-color: #0d6efd;   /* biru bootstrap */
+        color: white;
+        border-color: #0d6efd;
+    }
+</style>
 
 @endsection

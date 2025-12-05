@@ -61,7 +61,7 @@ root/
 
 ### 4.1 Clone Repository
 ```bash
-git clone https://github.com/zakifalihin/SekQRen.git
+git clone https://github.com/namaFolder/SekQRen.git
 ```
 
 ### 4.2 Install Dependencies
@@ -87,9 +87,12 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-### 4.4 Migrasi Database
+### 4.4 Migrasi Database & DataSeeder
 ```bash
 php artisan migrate
+```
+```bash
+php artisan db:seed
 ```
 
 Atau import file SQL:

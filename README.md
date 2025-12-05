@@ -87,10 +87,14 @@ DB_USERNAME=root
 DB_PASSWORD=
 ```
 
-### 4.4 Migrasi Database
+### 4.4 Migrasi Database & DataSeed
 ```bash
 php artisan migrate
 ```
+```bash
+php artisan db:seed
+```
+
 
 Atau import file SQL:
 

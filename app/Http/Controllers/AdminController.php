@@ -42,7 +42,7 @@ class AdminController extends Controller
             // Ambil 10 aktivitas absensi terakhir (terbaru dulu), eager load guru
             $aktivitas = AbsensiGuru::with('guru')
                 ->orderBy('created_at', 'desc')
-                ->limit(10)
+                ->limit(3)
                 ->get();
 
             return view('admin.dashboard', compact('totalGuru', 'totalSiswa', 'totalKelas', 'absensiHariIni', 'aktivitas'));

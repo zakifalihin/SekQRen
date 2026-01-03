@@ -19,7 +19,9 @@ class JadwalMapelKelas extends Model
         'guru_id',
         'hari',
         'jam_mulai',
-        'jam_selesai'
+        'jam_selesai',
+        'session_token',
+        'token_expired_at',
     ];
 
     public function kelas()

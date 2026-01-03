@@ -1,141 +1,151 @@
 <?php
 
-namespace App\Http\Controllers\Api; // <-- Namespace API yang Benar
+namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\Siswa;
 use App\Models\AbsensiSiswa;
-use App\Models\AbsensiSession; // Model Sesi Keamanan
-use App\Models\Jadwal; // Mengganti JadwalMapelKelas ke Jadwal (Asumsi nama model)
-use Illuminate\Support\Facades\DB; // Untuk transaksi database yang lebih aman
+use App\Models\AbsensiSession; // Model untuk menyimpan token sesi (Task A2)
+use App\Models\JadwalMapelKelas; // Sesuaikan dengan model jadwal kamu
+use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 use Carbon\Carbon;
 
 class AbsensiSiswaController extends Controller
 {
     /**
-     * API Task A3: Memproses scan QR Code Siswa dari aplikasi Flutter.
-     * Endpoint: POST /api/absensi/scan
+     * 🚀 TASK A2: Memulai sesi absensi dan generate Session Token.
+     * Endpoint: POST /api/absensi/start
+     * Dipanggil saat guru menekan tombol "LAKUKAN ABSENSI"
      */
-    public function processScanSiswa(Request $request) // ⬅️ Nama method lebih spesifik
+    public function startAbsensiSession(Request $request)
     {
-        // Gunakan transaksi untuk menjamin integritas data (rollback jika ada error)
-        DB::beginTransaction();
+        // 1. Validasi Input dari Flutter
+        // Pastikan key-nya 'id_jadwal' (sesuai jsonEncode di Flutter)
+        $request->validate([
+            'id_jadwal' => 'required|exists:jadwal_mapel_kelas,id',
+        ]);
 
         try {
-            // 1. VALIDASI INPUT
-            $validated = $request->validate([
-                'session_token' => 'required|string|size:32', // Tambahkan size untuk token (sesuai Task A2)
-                'siswa_qr_token' => 'required|string', 
-                'status' => 'required|in:Hadir,Terlambat,Izin,Sakit', 
-                'keterangan' => 'nullable|string'
-            ]);
-            
-            $token = $validated['session_token'];
-            $siswaQr = $validated['siswa_qr_token'];
-            $status = $validated['status'];
-            $keterangan = $validated['keterangan'];
-            $sekarang = Carbon::now('Asia/Makassar');
+            $guru = $request->user(); // Ambil data guru dari Token Login
 
-            // 2. VALIDASI TOKEN SESI (Keamanan & Konteks Absensi)
-            // ⚠️ Perbaikan: Menggunakan 'session_token' sesuai field di DB (Asumsi dari Task A2)
-            $session = AbsensiSession::where('session_token', $token) 
-                ->where('status', 'active') // Cek status aktif, tidak perlu is_expired jika ada status
-                ->with('jadwal') // Eager load relasi jadwal
+            // 2. (Opsional) Cek apakah sudah ada sesi aktif untuk jadwal ini?
+            // Supaya kalau guru keluar-masuk menu, tokennya tidak berubah-ubah terus.
+            $existingSession = AbsensiSession::where('jadwal_id', $request->id_jadwal)
+                ->where('guru_id', $guru->id)
+                ->where('status', 'active')
+                ->where('expires_at', '>', Carbon::now())
                 ->first();
 
-            if (!$session || $session->jadwal == null) {
-                // ⚠️ Jika sesi tidak ditemukan atau relasi jadwalnya putus
-                DB::rollBack();
+            if ($existingSession) {
+                return response()->json([
+                    'status' => 'success',
+                    'message' => 'Melanjutkan sesi yang sudah ada.',
+                    'data' => [
+                        'session_token' => $existingSession->session_token
+                    ]
+                ], 200);
+            }
+
+            // 3. Generate Token Baru
+            $token = Str::random(32); // String acak 32 karakter
+
+            // 4. Simpan ke Database
+            $session = AbsensiSession::create([
+                // KIRI: Nama Kolom Database, KANAN: Data dari Request
+                'jadwal_id'     => $request->id_jadwal, // ✅ Pastikan KIRI adalah 'jadwal_id'
+                'guru_id'       => $guru->id,
+                'session_token' => $token,
+                'status'        => 'active',
+                'expires_at'    => Carbon::now()->addHours(2), 
+            ]);
+
+            // 5. Kirim Token ke Flutter
+            return response()->json([
+                'status' => 'success',
+                'message' => 'Sesi absensi dimulai.',
+                'data' => [
+                    'session_token' => $session->session_token
+                ]
+            ], 200);
+
+        } catch (\Exception $e) {
+            Log::error('Start Absensi Error: ' . $e->getMessage());
+            return response()->json([
+                'status' => 'error',
+                'message' => 'Terjadi kesalahan server: ' . $e->getMessage()
+            ], 500);
+        }
+    }
+
+    /**
+     * 🚀 TASK A3: Memproses scan QR Code Siswa.
+     * Endpoint: POST /api/absensi/catat (atau /api/absensi/scan)
+     * Dipanggil saat kamera Flutter berhasil mendeteksi QR Code siswa
+     */
+    
+    public function catatKehadiran(Request $request) 
+    {
+        // 1. Validasi Input dari Flutter
+        $request->validate([
+            'session_token' => 'required|string',
+            'id_siswa'      => 'required|exists:siswa,id',
+            'id_jadwal'     => 'required|exists:jadwal_mapel_kelas,id', // Sesuai tabel jadwal kamu
+            'status'        => 'required|in:Hadir,Terlambat,Izin,Sakit,Alpha,Absen', 
+        ]);
+
+        try {
+            $sekarang = \Carbon\Carbon::now();
+
+            // 2. Validasi Token Sesi (Keamanan)
+            // Pastikan sesi sesuai dengan jadwal yang dikirim
+            $session = \App\Models\AbsensiSession::where('session_token', $request->session_token)
+                ->where('jadwal_id', $request->id_jadwal) // Pastikan token milik jadwal ini
+                ->where('status', 'active')
+                ->where('expires_at', '>', $sekarang)
+                ->first();
+
+            if (!$session) {
                 return response()->json([
                     'status'  => 'error',
-                    'message' => 'Sesi absensi tidak valid, sudah berakhir, atau data jadwal hilang.'
+                    'message' => 'Sesi absensi tidak valid atau sudah berakhir.'
                 ], 401);
             }
             
-            // Ambil data Konteks dari Sesi yang Aman
-            $jadwal = $session->jadwal; 
-            $guruId = $session->guru_id;
-            // ⚠️ Asumsi Jadwal memiliki field mapel_id dan kelas_id
-            $mapelId = $jadwal->mapel_id; 
-            $kelasId = $jadwal->kelas_id; 
-
-            // 3. CARI SISWA BERDASARKAN QR TOKEN
-            $siswa = Siswa::where('qr_token', $siswaQr)->first();
-
-            if (!$siswa) {
-                DB::rollBack();
-                return response()->json([
-                    'status'  => 'error',
-                    'message' => 'QR Code Siswa tidak valid atau tidak terdaftar.'
-                ], 404);
-            }
-            
-            // ⚠️ Perbaikan: Cek apakah siswa yang discan adalah siswa dari kelas yang sedang diajar
-            if ($siswa->kelas_id !== $kelasId) {
-                DB::rollBack();
-                return response()->json([
-                    'status' => 'error',
-                    'message' => "Siswa {$siswa->nama} bukan dari Kelas {$jadwal->kelas->nama_kelas} yang diajar pada sesi ini."
-                ], 403); // 403 Forbidden
-            }
-
-            // 4. CEK DUPLIKASI ABSENSI
-            // Absen ganda untuk mapel yang sama oleh guru yang sama pada hari yang sama
-            $sudahAbsen = AbsensiSiswa::where('siswa_id', $siswa->id)
+            // 3. Cek Duplikasi (Agar tidak double absen)
+            $sudahAbsen = \App\Models\AbsensiSiswa::where('siswa_id', $request->id_siswa)
+                ->where('jadwal_mapel_kelas_id', $request->id_jadwal)
                 ->where('tanggal', $sekarang->toDateString())
-                ->where('mapel_id', $mapelId)
-                // ⚠️ Opsional: Bisa ditambahkan where('guru_id', $guruId) untuk akuntabilitas lebih
                 ->exists();
 
             if ($sudahAbsen) {
-                DB::rollBack();
                 return response()->json([
                     'status'  => 'error',
-                    'message' => "Siswa {$siswa->nama} sudah diabsen hari ini untuk mata pelajaran ini."
-                ], 409); // 409 Conflict: Duplikasi
+                    'message' => "Siswa ini sudah diabsen sebelumnya."
+                ], 409); // 409 Conflict
             }
             
-            // 5. SIMPAN ABSENSI FINAL
-            AbsensiSiswa::create([
-                'siswa_id'    => $siswa->id,
-                'kelas_id'    => $kelasId, 
-                'mapel_id'    => $mapelId, 
-                'guru_id'     => $guruId, // Kunci Akuntabilitas
-                'tanggal'     => $sekarang->toDateString(),
-                'status'      => $status, 
-                'keterangan'  => $keterangan, 
-                'waktu_scan'  => $sekarang->toTimeString(),
-            ]);
+            // 4. Simpan ke Database (Sesuai struktur tabel baru)
+            $absen = new \App\Models\AbsensiSiswa();
+            $absen->siswa_id = $request->id_siswa;
+            $absen->jadwal_mapel_kelas_id = $request->id_jadwal; // ✅ Ini kolom baru yang benar
+            $absen->tanggal = $sekarang->toDateString();
+            $absen->waktu_absen = $sekarang->toTimeString();
+            $absen->status = $request->status;
+            $absen->save();
 
-            DB::commit(); // Commit transaksi jika semua berhasil
-
-            // 6. RESPONSE SUKSES
             return response()->json([
                 'status'  => 'success',
-                'message' => "Absensi siswa {$siswa->nama} berhasil dicatat.",
-                'siswa_nama' => $siswa->nama,
-                'status_dicatat' => $status,
-                'kelas' => $jadwal->kelas->nama_kelas // Kirim nama kelas untuk konfirmasi UI
-            ], 201);
-            
-        } catch (\Illuminate\Validation\ValidationException $e) {
-            DB::rollBack();
-            return response()->json([
-                'status' => 'error',
-                'message' => 'Validasi input gagal.',
-                'errors' => $e->errors()
-            ], 422);
+                'message' => "Berhasil mencatat kehadiran.",
+                'data'    => $absen
+            ], 200);
             
         } catch (\Exception $e) {
-            DB::rollBack();
-            Log::error('API Absensi Scan Error: ' . $e->getMessage()); 
-            
             return response()->json([
                 'status' => 'error',
-                'message' => 'Terjadi kesalahan internal pada server.',
-                'error_detail' => $e->getMessage()
+                'message' => 'Gagal mencatat absensi: ' . $e->getMessage()
             ], 500);
         }
     }

@@ -52,4 +52,9 @@ class AbsensiSiswa extends Model
         // Karena Guru ada di tabel 'users'
         return $this->belongsTo(User::class, 'guru_id');
     }
+
+    public function jadwal()
+    {
+        return $this->belongsTo(JadwalMapelKelas::class, 'jadwal_mapel_kelas_id', 'id');
+    }
 }

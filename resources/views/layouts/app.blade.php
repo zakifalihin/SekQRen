@@ -403,16 +403,6 @@
                 </ul>
             </div>
         </li>
-
-        <!-- MODUL 3: PELAPORAN & EXPORT -->
-        <li class="nav-item">
-            <!-- Menggunakan Route: admin.laporan.index -->
-            <a class="nav-link {{ Route::is('admin.laporan.index') ? 'active' : '' }}" href="{{ route('admin.laporan.index') }}">
-                <i class="bi bi-file-earmark-bar-graph-fill"></i>
-                <span>Laporan & Export</span>
-            </a>
-        </li>
-        
     </ul>
 </nav>
         <div class="sidebar-footer">

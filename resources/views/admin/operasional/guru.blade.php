@@ -52,7 +52,15 @@
         </form>
 
         <hr>
-
+        <div class="d-flex align-items-center">
+            <label class="me-2 small fw-bold">Tampilkan</label>
+            <select id="entry-select" class="form-select form-select-sm rounded-pill" style="width: 80px;">
+                <option value="10">10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+            </select>
+            <label class="ms-2 small fw-bold">entri</label>
+        </div>
         <div class="d-flex justify-content-between align-items-center mb-3">
             <span id="total-data-info" class="text-muted"></span>
             <button class="btn btn-success rounded-pill" id="export-excel-btn" disabled>
@@ -70,7 +78,6 @@
                         <th>Jam Datang</th>
                         <th>Jam Pulang</th>
                         <th>Total Jam Ajar</th>
-                        <th>Keterangan</th>
                     </tr>
                 </thead>
                 <tbody id="absensi-data-body">
@@ -90,6 +97,12 @@
 
 @push('scripts')
 <script>
+
+// State Global untuk Pagination
+let allData = [];
+let currentPage = 1;
+let rowsPerPage = 10;
+
 /* =============================
    ROUTE (WEB)
    ============================= */
@@ -168,7 +181,6 @@ function renderTable(data) {
         row.insertCell().textContent = item.jam_datang ?? "-";
         row.insertCell().textContent = item.jam_pulang ?? "-";
         row.insertCell().innerHTML = `<span class="badge bg-secondary text-white rounded-pill">${item.total_jam_ajar ?? 0} Jam</span>`;
-        row.insertCell().textContent = item.keterangan ?? "-";
     });
 }
 

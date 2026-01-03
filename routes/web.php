@@ -4,8 +4,8 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Api\AbsensiGuruController;
-use App\Http\Controllers\AbsensiController;
 use App\Http\Controllers\Api\LaporanController;
+use App\Http\Controllers\RekapAbsensiController;
 
 
 // Redirect root ke halaman login admin
@@ -70,8 +70,8 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::get('/absensi/hari-ini', [AbsensiGuruController::class, 'hariIni'])->name('absensi.hariini');
 
     //Daftar Layout Operasional Absensi
-    Route::get('absensi/guru', [AbsensiController::class, 'guruIndex'])->name('absensi.guru'); // Monitor absensi guru
-    Route::get('absensi/siswa', [AbsensiController::class, 'siswaIndex'])->name('absensi.siswa'); // Status absensi siswa real-time
+    Route::get('absensi/guru', [RekapAbsensiController::class, 'guruIndex'])->name('absensi.guru'); // Monitor absensi guru
+    Route::get('absensi/siswa', [RekapAbsensiController::class, 'siswaIndex'])->name('absensi.siswa'); // Status absensi siswa real-time
     Route::get('laporan', [LaporanController::class, 'index'])->name('laporan.index');
 
 
@@ -81,16 +81,16 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
      * ================
      * Tidak pakai API — semuanya lewat web + guard admin
      */
-    Route::get('/laporan/guru/data', [AbsensiController::class, 'getLaporanGuru'])->name('laporan.guru.data');
-    Route::get('/laporan/guru/export', [AbsensiController::class, 'exportLaporanGuru'])->name('laporan.guru.export');
+    Route::get('/laporan/guru/data', [RekapAbsensiController::class, 'getLaporanGuru'])->name('laporan.guru.data');
+    Route::get('/laporan/guru/export', [RekapAbsensiController::class, 'exportLaporanGuru'])->name('laporan.guru.export');
 
     /**
      * ==============================
      * Laporan Absensi Siswa (WEB)
      * ==============================
      */
-    Route::get('/laporan/siswa/data', [AbsensiController::class, 'getAbsensiSiswaWeb'])->name('laporan.siswa.data');
-    Route::get('/laporan/siswa/export', [AbsensiController::class, 'exportAbsensiSiswaWeb'])->name('laporan.siswa.export');
+    Route::get('/laporan/siswa/data', [RekapAbsensiController::class, 'getAbsensiSiswaWeb'])->name('laporan.siswa.data');
+    Route::get('/laporan/siswa/export', [RekapAbsensiController::class, 'exportAbsensiSiswaWeb'])->name('laporan.siswa.export');
 
 
 });

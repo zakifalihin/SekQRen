@@ -22,6 +22,11 @@ return new class extends Migration
             $table->enum('hari', ['Senin', 'Selasa', 'Rabu', 'Kamis', 'Jumat', 'Sabtu']);
             $table->time('jam_mulai');
             $table->time('jam_selesai');
+            
+            // 🚀 TAMBAHAN KOLOM UNTUK SESI ABSENSI (Manual & Sync)
+            $table->string('session_token', 32)->nullable();
+            $table->timestamp('token_expired_at')->nullable();
+            
             $table->timestamps();
 
             // Index untuk kolom hari

@@ -13,15 +13,6 @@ use Carbon\Carbon;
 
 class LaporanController extends Controller
 {
-    // =================================================================
-    // LOGIC SISWA (TASK B1 & B2 - ASUMSI SUDAH ADA)
-    // Silakan tempatkan method getLaporanAbsensi dan exportAbsensiExcel Siswa di sini.
-    // =================================================================
-
-    /**
-     * API Task B3: Mengambil laporan absensi guru berdasarkan rentang tanggal.
-     * Digunakan untuk Monitoring Absensi Guru Harian (Lacak Guru).
-     */
     public function getLaporanAbsensiGuru(Request $request)
     {
         try {
@@ -76,22 +67,15 @@ class LaporanController extends Controller
         }
     }
 
-    /**
-     * API Task B4: Export laporan absensi guru ke Excel.
-     */
     public function exportAbsensiGuruExcel(Request $request)
     {
-        // 1. Dapatkan data laporan mentah (menggunakan logic yang sama dengan Task B3)
-        // Note: Kita memanggil method yang sama untuk memastikan data yang di-export sudah difilter
         
         $response = $this->getLaporanAbsensiGuru($request);
         
         if ($response->getStatusCode() !== 200) {
-            // Jika Task B3 mengembalikan error (misal: validasi tanggal)
             return response()->json(['message' => 'Gagal membuat file, periksa filter data.', 'errors' => json_decode($response->getContent())], 400); 
         }
 
-        // 2. Ambil data yang sudah diformat dari JSON Response
         $responseData = json_decode($response->getContent(), true);
         $laporanData = collect($responseData['data']);
         
@@ -99,7 +83,7 @@ class LaporanController extends Controller
             return response()->json(['message' => 'Tidak ada data absensi guru untuk diekspor dengan filter ini.'], 404);
         }
 
-        // 3. Format Ulang Data ke Array Tunggal untuk Export (sesuai AbsensiGuruExport.php)
+        
         $exportData = $laporanData->map(function ($item) {
             return [
                 $item['tanggal'],

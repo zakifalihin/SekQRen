@@ -9,15 +9,15 @@ class AbsensiSession extends Model
 {
     use HasFactory;
 
-    // Nama tabel di database
+    // Pastikan nama tabel benar
     protected $table = 'absensi_sessions';
-    
-    // Kolom yang dapat diisi melalui mass assignment
+
+    // ✅ WAJIB: Daftarkan semua kolom agar bisa di-insert
     protected $fillable = [
-        'token',
+        'jadwal_id',      // Harus sama persis dengan nama kolom di database
         'guru_id',
-        'jadwal_id',
-        'is_expired',
+        'session_token',
+        'status',
         'expires_at',
     ];
 

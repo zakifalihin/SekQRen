@@ -11,11 +11,6 @@ use Carbon\Carbon;
 
 class JadwalController extends Controller
 {
-    // API Task A1: GET /api/guru/jadwal/today
-    /**
-     * Mengambil daftar jadwal mengajar guru yang sedang login untuk hari ini.
-     * Digunakan oleh aplikasi Flutter Guru.
-     */
     public function getJadwalHariIni(Request $request)
     {
         try {

@@ -3,6 +3,8 @@
 namespace App\Models;
 
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
+
+use App\Http\Controllers\Api\AbsensiController;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
@@ -25,7 +27,6 @@ class User extends Authenticatable
         'email',
         'password',
         'role',
-        'foto_url'
     ];
 
     /**
@@ -63,7 +64,7 @@ class User extends Authenticatable
     // 1 Guru bisa punya banyak Absensi
     public function absensis()
     {
-        return $this->hasMany(Absensi::class, 'guru_id');
+        return $this->hasMany(AbsensiController::class, 'guru_id');
     }
 
     // 1 Guru bisa mengajar di banyak Kelas

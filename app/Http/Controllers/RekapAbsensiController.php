@@ -34,13 +34,65 @@ class RekapAbsensiController extends Controller
     /**
      * Helper untuk mendapatkan Query Absensi Guru dengan filter dan sorting yang benar
      */
+    // protected function getAbsensiGuruQuery(Request $request)
+    // {
+    //     // === PERBAIKAN LOGIC FILTERING TANGGAL ===
+    //     // 1. Pastikan tanggal mulai diambil dari 00:00:00
+    //     $startDate = Carbon::parse($request->start_date)->startOfDay();
+    //     // 2. Pastikan tanggal akhir diambil sampai 23:59:59 (akhir hari)
+    //     $endDate = Carbon::parse($request->end_date)->endOfDay();
+        
+    //     $query = \App\Models\AbsensiGuru::with('guru')
+    //         ->whereBetween('tanggal', [$startDate, $endDate]);
+
+    //     if ($request->guru_id) {
+    //         $query->where('guru_id', $request->guru_id);
+    //     }
+
+    //     // === SORTING LENGKAP (Sudah Benar) ===
+    //     $query->orderBy('tanggal', 'asc')
+    //         ->orderByRaw("CASE WHEN jam_datang IS NULL THEN 1 ELSE 0 END")
+    //         ->orderBy('jam_datang', 'asc')
+    //         ->orderByRaw("CASE WHEN jam_pulang IS NULL THEN 1 ELSE 0 END")
+    //         ->orderBy('jam_pulang', 'asc');
+
+    //     return $query;
+    // }
+
+    // public function getLaporanGuru(Request $request)
+    // {
+    //     $request->validate([
+    //         'start_date' => 'required|date',
+    //         'end_date'   => 'required|date',
+    //     ]);
+
+    //     // Menggunakan helper function yang sudah diperbaiki filtering-nya
+    //     $data = $this->getAbsensiGuruQuery($request)
+    //         ->get()
+    //         ->map(function ($row) {
+    //             return [
+    //                 'guru_id'        => $row->guru_id,
+    //                 'tanggal'        => $row->tanggal,
+    //                 'guru_nama'      => $row->guru->nama ?? '-',
+    //                 'status'         => $row->status,
+    //                 'jam_datang'     => $row->jam_datang ?? null, 
+    //                 'jam_pulang'     => $row->jam_pulang ?? null,
+    //                 'total_jam_ajar' => $row->total_jam_ajar ?? "0.00",
+    //                 'keterangan'     => $row->keterangan ?? '-',
+    //             ];
+    //         });
+
+    //     return response()->json(['data' => $data]);
+    // }
+
+    /**
+     * Helper untuk mendapatkan Query Absensi Guru dengan filter dan sorting yang benar
+     */
     protected function getAbsensiGuruQuery(Request $request)
     {
-        // === PERBAIKAN LOGIC FILTERING TANGGAL ===
-        // 1. Pastikan tanggal mulai diambil dari 00:00:00
-        $startDate = Carbon::parse($request->start_date)->startOfDay();
-        // 2. Pastikan tanggal akhir diambil sampai 23:59:59 (akhir hari)
-        $endDate = Carbon::parse($request->end_date)->endOfDay();
+        // Gunakan format Y-m-d jika kolom 'tanggal' di DB bertipe DATE
+        $startDate = Carbon::parse($request->start_date)->format('Y-m-d');
+        $endDate   = Carbon::parse($request->end_date)->format('Y-m-d');
         
         $query = \App\Models\AbsensiGuru::with('guru')
             ->whereBetween('tanggal', [$startDate, $endDate]);
@@ -49,12 +101,10 @@ class RekapAbsensiController extends Controller
             $query->where('guru_id', $request->guru_id);
         }
 
-        // === SORTING LENGKAP (Sudah Benar) ===
-        $query->orderBy('tanggal', 'asc')
+        // Sorting agar data yang hadir paling awal muncul di atas
+        $query->orderBy('tanggal', 'desc') // Biasanya laporan terbaru di atas
             ->orderByRaw("CASE WHEN jam_datang IS NULL THEN 1 ELSE 0 END")
-            ->orderBy('jam_datang', 'asc')
-            ->orderByRaw("CASE WHEN jam_pulang IS NULL THEN 1 ELSE 0 END")
-            ->orderBy('jam_pulang', 'asc');
+            ->orderBy('jam_datang', 'asc');
 
         return $query;
     }
@@ -66,18 +116,19 @@ class RekapAbsensiController extends Controller
             'end_date'   => 'required|date',
         ]);
 
-        // Menggunakan helper function yang sudah diperbaiki filtering-nya
         $data = $this->getAbsensiGuruQuery($request)
             ->get()
             ->map(function ($row) {
                 return [
                     'guru_id'        => $row->guru_id,
-                    'tanggal'        => $row->tanggal,
+                    // Format tanggal agar lebih enak dibaca di tabel web
+                    'tanggal'        => Carbon::parse($row->tanggal)->format('d-m-Y'),
                     'guru_nama'      => $row->guru->nama ?? '-',
                     'status'         => $row->status,
-                    'jam_datang'     => $row->jam_datang ?? null, 
-                    'jam_pulang'     => $row->jam_pulang ?? null,
-                    'total_jam_ajar' => $row->total_jam_ajar ?? "0.00",
+                    'jam_datang'     => $row->jam_datang ? Carbon::parse($row->jam_datang)->format('H:i') : '-', 
+                    'jam_pulang'     => $row->jam_pulang ? Carbon::parse($row->jam_pulang)->format('H:i') : '-',
+                    // Pastikan total_jam_ajar dikirim sebagai angka decimal
+                    'total_jam_ajar' => number_format($row->total_jam_ajar, 2, '.', ''),
                     'keterangan'     => $row->keterangan ?? '-',
                 ];
             });

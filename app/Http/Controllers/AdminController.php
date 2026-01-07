@@ -127,10 +127,15 @@ class AdminController extends Controller
 
     public function destroyGuru($id)
     {
+        // Cari user dengan role guru, jika tidak ada akan return 404
         $guru = User::where('role', 'guru')->findOrFail($id);
+        
+        // Proses hapus data
         $guru->delete();
 
-        return redirect()->route('guru.index')->with('success', 'Data guru berhasil dihapus');
+        // Redirect kembali ke halaman index guru dengan pesan sukses
+        // Pastikan nama route sesuai (admin.guru.index)
+        return redirect()->route('admin.guru.index')->with('success', 'Data guru berhasil dihapus secara permanen');
     }
 
     public function showGuru(Request $request, $id = null)
@@ -153,6 +158,13 @@ class AdminController extends Controller
 
         return view('guru.show', compact('guru'));
     }
+
+
+
+
+
+
+
 
 
 

@@ -29,7 +29,7 @@
                     <thead class="table-primary">
                         <tr>
                             <th scope="col" class="text-center" style="width: 5%">No</th>
-                            <th scope="col">NIP</th>
+                            <th scope="col">NIK</th>
                             <th scope="col">Nama</th>
                             <th scope="col">Email</th>
                             <th scope="col" class="text-center" style="width: 20%">Aksi</th>
@@ -124,7 +124,7 @@
                 @csrf
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="nip" class="form-label">NIP</label>
+                        <label for="nip" class="form-label">NIK</label>
                         <input type="text" class="form-control" id="nip" name="nip" required>
                     </div>
                     <div class="mb-3">
@@ -161,7 +161,7 @@
                 @method('PUT')
                 <div class="modal-body">
                     <div class="mb-3">
-                        <label for="editNip" class="form-label">NIP</label>
+                        <label for="editNip" class="form-label">NIK</label>
                         <input type="text" class="form-control" id="editNip" name="nip" required>
                     </div>
                     <div class="mb-3">
@@ -195,7 +195,7 @@
             </div>
             <div class="modal-body">
                 <div class="mb-3">
-                    <strong>NIP:</strong> <span id="detailNip"></span>
+                    <strong>NIK:</strong> <span id="detailNip"></span>
                 </div>
                 <div class="mb-3">
                     <strong>Nama:</strong> <span id="detailNama"></span>

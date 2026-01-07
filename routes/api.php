@@ -5,23 +5,21 @@ use App\Http\Controllers\Api\AuthController;
 use App\Http\Controllers\Api\AbsensiGuruController;
 use App\Http\Controllers\Api\GuruController; // Controller Utama
 use App\Http\Controllers\Api\LaporanController;
-use App\Http\Controllers\Api\JadwalController; // Controller lama, mungkin tidak terpakai
 use App\Http\Controllers\Api\AbsensiSiswaController;
 use App\Http\Controllers\Api\AbsensiController;
 
 // =======================================================
 // 1. AUTENTIKASI (PUBLIC)
 // =======================================================
-
-// LOGIN / LOGOUT GURU
+// LOGIN
 Route::post('/guru/login', [AuthController::class, 'login']);
-Route::post('/guru/logout', [AuthController::class, 'logout']);
 
 // =======================================================
 // 2. PROTECTED ROUTES (Requires auth:sanctum)
 // =======================================================
 
 Route::middleware('auth:sanctum')->group(function () {
+    Route::post('/guru/logout', [AuthController::class, 'logout']);
 
     // --- DASHBOARD & DATA MASTER GURU ---
     Route::get('/guru/dashboard', [GuruController::class, 'dashboard']);
@@ -46,29 +44,30 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('laporan/guru', [LaporanController::class, 'getLaporanAbsensiGuru']);
     Route::get('laporan/export/guru', [LaporanController::class, 'exportAbsensiGuruExcel']);
 
+    // --- AKTIVITAS ---
+    Route::post('/absensi/update-status/{id}', [AbsensiSiswaController::class, 'updateStatusSiswa']);
+
+    // AUTH ACTIONS
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
+    Route::get('/user-profile', function (Illuminate\Http\Request $request) {
+        return response()->json([
+            'status' => 'success',
+            'data' => $request->user()
+        ]);
+    });
+
+
+
+    Route::post('/change-password', [AuthController::class, 'changePassword']);
 
     /*
     |--------------------------------------------------------------------------
     | API Routes
     |--------------------------------------------------------------------------
     */
-        // Grouping dengan prefix 'absensi' agar URL rapi
-        // URL hasil: /api/absensi/...
         Route::prefix('absensi')->group(function () {
-            
-            // 1. Memulai Sesi (Guru klik 'Mulai Absen')
-            // URL: /api/absensi/start
-            // Mengarah ke: startAbsensiSession di Controller
             Route::post('/start', [AbsensiSiswaController::class, 'startAbsensiSession']);
-
-            // 2. Mencatat Kehadiran (Scanner Siswa mengirim data)
-            // URL: /api/absensi/catat
-            // Mengarah ke: catatKehadiran di Controller
             Route::post('/catat', [AbsensiSiswaController::class, 'catatKehadiran']);
-
-            // ⚠️ Catatan: Route absensi Guru (scan diri sendiri) belum ada method-nya di Controller kamu.
-            // Jika nanti method 'absenGuru' sudah dibuat, uncomment baris di bawah ini:
-            // Route::post('/guru', [AbsensiSiswaController::class, 'absenGuru']);
         });
         // File: routes/api.php
 
@@ -78,3 +77,4 @@ Route::middleware('auth:sanctum')->group(function () {
         Route::get('/absensi/detail/{id_jadwal}', [AbsensiController::class, 'getDetailAbsensi']);
         Route::put('/absensi/update/{id}', [AbsensiController::class, 'updateStatusSiswa']);
 });
+

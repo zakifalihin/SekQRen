@@ -180,7 +180,7 @@ function renderTable(data) {
         row.insertCell().innerHTML = `<span class="badge ${color} rounded-pill">${item.status}</span>`;
         row.insertCell().textContent = item.jam_datang ?? "-";
         row.insertCell().textContent = item.jam_pulang ?? "-";
-        row.insertCell().innerHTML = `<span class="badge bg-secondary text-white rounded-pill">${item.total_jam_ajar ?? 0} Jam</span>`;
+        row.insertCell().innerHTML = `<span class="badge bg-secondary text-white rounded-pill">${item.total_jam_ajar} Jam</span>`;
     });
 }
 

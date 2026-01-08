@@ -35,6 +35,9 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 RUN rm -rf public/storage \
     && php artisan storage:link || echo "Storage link already exists"
 
+# 🔹 Buat folder Exports & Imports agar Laravel Excel siap
+RUN mkdir -p app/Exports app/Imports
+
 # Expose port
 EXPOSE 8080
 

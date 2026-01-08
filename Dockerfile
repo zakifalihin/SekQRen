@@ -31,6 +31,10 @@ COPY . .
 # Install PHP dependencies
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 
+# 🔹 Hapus public/storage lama & buat symlink baru
+RUN rm -rf public/storage \
+    && php artisan storage:link || echo "Storage link already exists"
+
 # Expose port
 EXPOSE 8080
 

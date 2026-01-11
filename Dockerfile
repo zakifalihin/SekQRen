@@ -1,6 +1,6 @@
 FROM php:8.3-cli
 
-# 1. Install dependencies sistem yang dibutuhkan library Excel/PDF
+# 1. Install dependencies sistem
 RUN apt-get update && apt-get install -y \
     libpng-dev \
     libjpeg-dev \
@@ -16,7 +16,7 @@ RUN apt-get update && apt-get install -y \
     curl \
     && rm -rf /var/lib/apt/lists/*
 
-# 2. Install extension PHP (Lengkap untuk manipulasi file & data)
+# 2. Install extension PHP
 RUN docker-php-ext-configure gd --with-freetype --with-jpeg \
     && docker-php-ext-install \
     gd \
@@ -36,9 +36,9 @@ COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 WORKDIR /app
 COPY . .
 
-# 4. SET PERMISSION (Ini kunci agar tidak "Failed to Fetch")
-# Railway butuh folder storage bisa ditulis oleh user server
-RUN chown -R www-data:www-data /app/storage /app/bootstrap/cache \
+# 4. SET PERMISSION (Optimalkan untuk Railway)
+# Pastikan seluruh folder /app dimiliki oleh www-data
+RUN chown -R www-data:www-data /app \
     && chmod -R 775 /app/storage /app/bootstrap/cache
 
 RUN composer install --no-interaction --prefer-dist --optimize-autoloader
@@ -47,12 +47,14 @@ RUN composer install --no-interaction --prefer-dist --optimize-autoloader
 RUN rm -rf public/storage \
     && php artisan storage:link || echo "Storage link exists"
 
-# Buat folder khusus Export/Import agar terstruktur
+# Pastikan folder Exports/Imports siap
 RUN mkdir -p storage/app/Exports storage/app/Imports \
-    && chown -R www-data:www-data storage/app/Exports storage/app/Imports \
-    && chmod -R 775 storage/app/Exports storage/app/Imports
+    && chown -R www-data:www-data storage/app/Exports storage/app/Imports
 
 EXPOSE 8080
 
-# 6. Optimasi Cache Laravel sebelum running
-CMD php artisan config:cache && php artisan route:cache && php -S 0.0.0.0:8080 -t public
+# 6. Jalankan server (Gunakan Clear daripada Cache untuk kestabilan Railway)
+CMD php artisan config:clear && \
+    php artisan route:clear && \
+    php artisan view:clear && \
+    php -S 0.0.0.0:8080 -t public

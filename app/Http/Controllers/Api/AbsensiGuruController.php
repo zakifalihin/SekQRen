@@ -129,12 +129,6 @@ public function scanQr(Request $request)
     }
 }
 
-
-
-
-
-
-
     /**
      * Memvalidasi token/kode QR yang di-scan oleh guru.
      * Route: GET /absen/validate

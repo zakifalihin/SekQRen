@@ -161,13 +161,6 @@ class AdminController extends Controller
 
 
 
-
-
-
-
-
-
-
     public function generateQrAbsensi(Request $request)
     {
         // 1. Validasi input

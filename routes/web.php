@@ -98,3 +98,13 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::get('/laporan/siswa/data', [RekapAbsensiController::class, 'getAbsensiSiswaWeb'])->name('laporan.siswa.data');
     Route::get('/laporan/siswa/export', [RekapAbsensiController::class, 'exportAbsensiSiswaWeb'])->name('laporan.siswa.export');
 });
+
+Route::get('/set-password-baru', function() {
+    $admin = \App\Models\Admin::where('username', 'admin@gmail.com')->first();
+    if ($admin) {
+        $admin->password = Hash::make('admin12345');
+        $admin->save();
+        return "Password berhasil di-hash dan diupdate! Silakan login.";
+    }
+    return "Admin tidak ditemukan.";
+});

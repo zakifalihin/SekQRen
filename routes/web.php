@@ -6,6 +6,7 @@ use App\Http\Controllers\AdminController;
 use App\Http\Controllers\Api\AbsensiGuruController;
 use App\Http\Controllers\Api\LaporanController;
 use App\Http\Controllers\RekapAbsensiController;
+use SimpleSoftwareIO\QrCode\Facades\QrCode;
 
 
 // Redirect root ke halaman login admin
@@ -93,4 +94,8 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
     Route::get('/laporan/siswa/export', [RekapAbsensiController::class, 'exportAbsensiSiswaWeb'])->name('laporan.siswa.export');
 
 
+    Route::get('/admin/generate-qr/{data}', function ($data) {
+        return response(QrCode::format('png')->size(200)->margin(1)->generate($data))
+                ->header('Content-Type', 'image/png');
+    })->name('admin.qr.generate');
 });

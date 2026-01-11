@@ -85,7 +85,7 @@
                                             <i class="bi bi-pencil-square"></i>
                                         </button>
                                         <button type="button" class="btn btn-success btn-sm text-white" data-bs-toggle="modal" data-bs-target="#qrSiswaModal"
-                                                data-nama="{{ $s->nama }}" data-qr_code="{{ Storage::url($s->qr_code) }}">
+                                                data-nama="{{ $s->nama }}" data-nisn="{{ $s->nisn }}">
                                             <i class="bi bi-qr-code"></i>
                                         </button>
                                         <form action="{{ route('admin.siswa.destroy', $s->id) }}" method="POST" onsubmit="return confirm('Yakin hapus data ini?')">
@@ -326,7 +326,9 @@
             </div>
             <div class="modal-body text-center" id="qr-print-area">
                 <p class="fw-bold mb-2">QR Code untuk <span id="qrSiswaNama"></span></p>
-                <img id="qrCodeImage" src="" alt="QR Code Siswa" class="img-fluid" style="width: 200px; height: 200px;">
+                <div style="background: white; padding: 10px; display: inline-block; border: 1px solid #ddd;">
+                    <img id="qrCodeImage" src="" alt="QR Code" class="img-fluid" style="width: 200px; height: 200px;">
+                </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">Tutup</button>
@@ -444,13 +446,16 @@
         qrSiswaModal.addEventListener('show.bs.modal', function (event) {
             const button = event.relatedTarget;
             const siswaNama = button.getAttribute('data-nama');
-            const qrCodePath = button.getAttribute('data-qr_code');
+            const siswaNisn = button.getAttribute('data-nisn');
 
             const qrSiswaNama = qrSiswaModal.querySelector('#qrSiswaNama');
             const qrCodeImage = qrSiswaModal.querySelector('#qrCodeImage');
             
             qrSiswaNama.textContent = siswaNama;
-            qrCodeImage.src = qrCodePath;
+
+            // Sesuaikan dengan nama route di web.php
+            const qrUrl = `{{ route('admin.qr.generate', ['data' => '__DATA__']) }}`.replace('__DATA__', siswaNisn);
+            qrCodeImage.src = qrUrl;
         });
 
         const printQrButton = document.getElementById('printQrButton');

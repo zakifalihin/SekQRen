@@ -287,29 +287,29 @@ class RekapAbsensiController extends Controller
 
     public function exportAbsensiSiswaWeb(Request $request)
     {
-        // Mengambil query yang sudah difilter dan di-sort
+        // Mengambil data dari base query yang sudah difilter
         $results = $this->baseAbsensiQuery($request)->get();
 
-        // Mapping data untuk Excel/CSV
         $dataExport = $results->map(function ($item, $key) {
             return [
-                'No'             => $key + 1,
-                // PERBAIKAN: Format tanggal di sini agar tidak muncul angka aneh
-                'Tanggal'        => \Carbon\Carbon::parse($item->tanggal)->format('d-m-Y'),
-                'Waktu'          => $item->waktu_absen ?? '-',
+                'Nomor'          => $key + 1,
+                // Pakai format ISO Y-m-d agar Excel lebih mudah mengenali sebagai tanggal
+                // atau pastikan heading di class Export sudah pas.
+                'Tanggal'        => Carbon::parse($item->tanggal)->translatedFormat('d F Y'),
+                'Waktu Scan'     => $item->waktu_absen ?? '-',
                 'NISN'           => $item->siswa->nisn ?? '-',
                 'Nama Siswa'     => $item->siswa->nama ?? '-',
                 'Kelas'          => $item->jadwal->kelas->nama_kelas ?? '-',
-                'Mapel'          => $item->jadwal->mataPelajaran->nama_mapel ?? '-',
-                'Status'         => $item->status,
-                'Guru PJ'        => $item->jadwal->guru->nama ?? '-',
+                'Mata Pelajaran' => $item->jadwal->mataPelajaran->nama_mapel ?? '-',
+                'Status Kehadiran'=> $item->status,
+                'Guru Pengampu'  => $item->jadwal->guru->nama ?? '-',
                 'Keterangan'     => $item->keterangan ?? '-',
             ];
         });
 
         return \Maatwebsite\Excel\Facades\Excel::download(
             new \App\Exports\AbsensiSiswaExport($dataExport), 
-            'Laporan_Absensi_Siswa_'.date('Ymd_His').'.xlsx'
+            'Rekap_Siswa_' . now()->format('Ymd_His') . '.xlsx'
         );
     }
 }

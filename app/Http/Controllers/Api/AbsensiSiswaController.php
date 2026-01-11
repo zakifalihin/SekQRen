@@ -90,7 +90,7 @@ class AbsensiSiswaController extends Controller
                 return response()->json(['status' => 'error', 'message' => 'Sesi tidak valid.'], 401);
             }
 
-            // 2. VALIDASI RANGE WAKTU (Konsep 1)
+            // 2. VALIDASI RANGE WAKTU
             $jadwal = JadwalMapelKelas::find($request->id_jadwal);
             if ($jamSekarang < $jadwal->jam_mulai || $jamSekarang > $jadwal->jam_selesai) {
                 return response()->json([
@@ -118,39 +118,52 @@ class AbsensiSiswaController extends Controller
             $absen->status = $request->status;
             $absen->save();
 
-            // 5. LOGIKA UPDATE TOTAL JAM AJAR GURU
-            // Cek apakah ini siswa PERTAMA yang berhasil di-absen pada jadwal ini hari ini
-            $countSiswa = AbsensiSiswa::where('jadwal_mapel_kelas_id', $request->id_jadwal)
-                ->where('tanggal', $hariIni)
-                ->count();
+            // 5. LOGIKA UPDATE TOTAL JAM AJAR GURU (REAL-TIME)
+            try {
+                // Ambil ID semua jadwal yang sudah pernah di-absen oleh guru ini hari ini
+                $jadwalIdsHariIni = AbsensiSiswa::where('tanggal', $hariIni)
+                    ->whereHas('jadwalMapelKelas', function($query) use ($session) {
+                        $query->where('guru_id', $session->guru_id); 
+                    })
+                    ->distinct()
+                    ->pluck('jadwal_mapel_kelas_id');
 
-            if ($countSiswa === 1) {
-                // Hitung durasi jam pelajaran
-                $mulai = Carbon::parse($jadwal->jam_mulai);
-                $selesai = Carbon::parse($jadwal->jam_selesai);
-                
-                // Menggunakan diffInMinutes dibagi 60 agar presisi untuk decimal(4,2)
-                $durasiJam = $mulai->diffInMinutes($selesai) / 60;
-                
-                // Minimal 1 jam jika durasi sangat singkat
-                if ($durasiJam <= 0) $durasiJam = 1;
+                $totalJamKumulatif = 0;
 
-                // Cari record absensi guru hari ini
+                foreach ($jadwalIdsHariIni as $idJadwal) {
+                    $j = JadwalMapelKelas::find($idJadwal);
+                    if ($j) {
+                        $mulai = Carbon::parse($j->jam_mulai);
+                        $selesai = Carbon::parse($j->jam_selesai);
+                        
+                        // Hitung selisih jam
+                        $durasi = $mulai->diffInMinutes($selesai) / 60;
+                        $totalJamKumulatif += $durasi;
+                    }
+                }
+
+                // Update record absensi guru hari ini
                 $laporanGuru = AbsensiGuru::where('guru_id', $session->guru_id)
                     ->where('tanggal', $hariIni)
                     ->first();
 
                 if ($laporanGuru) {
-                    $laporanGuru->increment('total_jam_ajar', $durasiJam);
+                    // Pembulatan 2 angka di belakang koma (sesuai screenshot 0.00)
+                    $laporanGuru->total_jam_ajar = round($totalJamKumulatif, 2);
+                    $laporanGuru->save();
                 }
+
+            } catch (\Exception $e) {
+                Log::error('Gagal update jam ajar: ' . $e->getMessage());
             }
 
+            // --- TAMBAHKAN RETURN SUCCESS DI SINI ---
             return response()->json([
                 'status'  => 'success',
-                'message' => "Kehadiran dicatat. Total jam ajar diperbarui.",
+                'message' => "Kehadiran dicatat & Jam ajar diperbarui.",
                 'data'    => $absen
             ], 200);
-            
+
         } catch (\Exception $e) {
             return response()->json(['status' => 'error', 'message' => $e->getMessage()], 500);
         }

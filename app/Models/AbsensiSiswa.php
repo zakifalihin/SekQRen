@@ -57,4 +57,9 @@ class AbsensiSiswa extends Model
     {
         return $this->belongsTo(JadwalMapelKelas::class, 'jadwal_mapel_kelas_id', 'id');
     }
+
+    public function jadwalMapelKelas()
+    {
+        return $this->belongsTo(JadwalMapelKelas::class, 'jadwal_mapel_kelas_id');
+    }
 }

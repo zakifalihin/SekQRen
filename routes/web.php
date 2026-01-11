@@ -38,6 +38,11 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
 
     // Absensi QRcode admin
     Route::get('/absensi/qr', [AdminController::class, 'generateQrAbsensi'])->name('absensi.qr');
+    // QRcode Siswa
+    Route::get('/generate-qr/{data}', function ($data) {
+        return response(QrCode::format('png')->size(200)->margin(1)->generate($data))
+                ->header('Content-Type', 'image/png');
+    })->name('qr.generate');
 
 
     // Rute Siswa
@@ -92,10 +97,4 @@ Route::middleware(['auth:admin'])->prefix('admin')->name('admin.')->group(functi
      */
     Route::get('/laporan/siswa/data', [RekapAbsensiController::class, 'getAbsensiSiswaWeb'])->name('laporan.siswa.data');
     Route::get('/laporan/siswa/export', [RekapAbsensiController::class, 'exportAbsensiSiswaWeb'])->name('laporan.siswa.export');
-
-
-    Route::get('/admin/generate-qr/{data}', function ($data) {
-        return response(QrCode::format('png')->size(200)->margin(1)->generate($data))
-                ->header('Content-Type', 'image/png');
-    })->name('admin.qr.generate');
 });

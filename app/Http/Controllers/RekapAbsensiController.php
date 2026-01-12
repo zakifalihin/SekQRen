@@ -65,6 +65,7 @@ class RekapAbsensiController extends Controller
             ->get()
             ->map(function ($row) {
                 // 1. Ambil semua ID Jadwal di mana guru ini sudah melakukan absensi siswa pada tanggal tersebut
+                // Ini memastikan jam ajar hanya dihitung jika guru benar-benar mengabsen siswa di kelas
                 $jadwalIds = \App\Models\AbsensiSiswa::where('tanggal', $row->tanggal)
                     ->whereHas('jadwal', function($q) use ($row) {
                         $q->where('guru_id', $row->guru_id);
@@ -72,28 +73,41 @@ class RekapAbsensiController extends Controller
                     ->distinct('jadwal_mapel_kelas_id')
                     ->pluck('jadwal_mapel_kelas_id');
 
-                // 2. Hitung total durasi jam dari jadwal-jadwal tersebut
+                // 2. Hitung total durasi jam dari jadwal-jadwal tersebut (dalam menit)
                 $totalMenit = 0;
                 $jadwalTerlaksana = \App\Models\JadwalMapelKelas::whereIn('id', $jadwalIds)->get();
 
                 foreach ($jadwalTerlaksana as $j) {
-                    $mulai = \Carbon\Carbon::parse($j->jam_mulai);
-                    $selesai = \Carbon\Carbon::parse($j->jam_selesai);
-                    // Menghitung selisih dalam menit
-                    $totalMenit += $mulai->diffInMinutes($selesai);
+                    if ($j->jam_mulai && $j->jam_selesai) {
+                        $mulai = \Carbon\Carbon::parse($j->jam_mulai);
+                        $selesai = \Carbon\Carbon::parse($j->jam_selesai);
+                        $totalMenit += $mulai->diffInMinutes($selesai);
+                    }
                 }
 
-                // 3. Konversi menit ke Jam (misal 120 menit jadi 2.00 jam)
-                $totalJamAjar = $totalMenit / 60;
+                // 3. Konversi menit ke format teks "X Jam Y Menit"
+                $jam = floor($totalMenit / 60);
+                $sisaMenit = $totalMenit % 60;
+
+                if ($jam > 0 && $sisaMenit > 0) {
+                    $formatJamAjar = "{$jam} Jam {$sisaMenit} Menit";
+                } elseif ($jam > 0) {
+                    $formatJamAjar = "{$jam} Jam";
+                } elseif ($sisaMenit > 0) {
+                    $formatJamAjar = "{$sisaMenit} Menit";
+                } else {
+                    $formatJamAjar = "0 Jam";
+                }
 
                 return [
                     'guru_id'        => $row->guru_id,
+                    // Menggunakan format Carbon agar tanggal tampil konsisten d-m-Y
                     'tanggal'        => \Carbon\Carbon::parse($row->tanggal)->format('d-m-Y'),
                     'guru_nama'      => $row->guru->nama ?? '-',
                     'status'         => $row->status,
                     'jam_datang'     => $row->jam_datang ? \Carbon\Carbon::parse($row->jam_datang)->format('H:i') : '-', 
                     'jam_pulang'     => $row->jam_pulang ? \Carbon\Carbon::parse($row->jam_pulang)->format('H:i') : '-',
-                    'total_jam_ajar' => number_format($totalJamAjar, 2, '.', ''),
+                    'total_jam_ajar' => $formatJamAjar, // Sekarang mengirim teks, bukan angka desimal lagi
                     'keterangan'     => $row->keterangan ?? '-',
                 ];
             });
